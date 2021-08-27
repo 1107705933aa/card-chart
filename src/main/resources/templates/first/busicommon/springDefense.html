@@ -1,0 +1,365 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+
+<div id="app" class="baifenbai">
+  <div class="head-time">
+    <div class="block" size="mini">
+      <el-date-picker v-model="timeData" type="daterange" range-separator="至" start-placeholder="开始日期"
+        end-placeholder="结束日期" @blur="changeData">
+      </el-date-picker>
+    </div>
+  </div>
+  <el-row class="content-area">
+    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="baifenbai">
+      <div id="echarts" class="baifenbai"></div>
+    </el-col>
+  </el-row>
+</div>
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var mtlType = getRequestParam(document.URL);
+  var urlValue = getRequestParam(document.URL);
+
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+
+  const app = new Vue({
+    el: "#app",
+    data: {
+      timeData: ['Fri Jan 01 2021 00:00:00 GMT+0800 (中国标准时间)', 'Fri Mar 05 2021 00:00:00 GMT+0800 (中国标准时间)'],
+      dituData: [],
+      rulesOfColor: []
+    },
+    created: function () {
+      this.getData();
+    },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      changeData() {
+        this.getData();
+      },
+      getData() {
+        var this_ = this;
+        var maxValue = 0;
+        var formData = new FormData();
+        if (Boolean(urlValue.date) == true) {
+          if (this_.timeData[0]) {
+            formData.append("beginDate", this_.timeData[0]);
+          }
+          if (this_.timeData[1]) {
+            formData.append("endDate", this_.timeData[1]);
+          }
+        }
+        axios.post(parent.IFM_CONTEXT + '/first/busicommon/springdefense/queries/' + urlValue.type, formData).then(function (res) {
+          var vueData = [];
+          res = res.data;
+          if (res.length == 0) return;
+          for (var i = 0; i < res.length; i++) {
+            var tem = {};
+            tem.name = res[i].name;
+            tem.belowStandardNum = res[i].belowStandardNum;
+            tem.text = res[i].text;
+            if (res[i].value != null && res[i].value != '' && res[i].value != undefined) {
+              tem.value = parseInt(res[i].value);
+              if (maxValue < res[i].value) {
+                maxValue = res[i].value;
+              }
+            }
+            vueData.push(tem);
+          }
+          this_.dituData = res.data;
+          this_.rulesOfColor = res.rulesOfColor.map(item => ({
+            gte: item.minValue,
+            lte: item.maxValue,
+            label: item.minValue + " - " + item.maxValue,
+            color: item.color
+          }))
+        }).then(function () {
+          this_.$nextTick(() => {
+            this_.showProvince(maxValue);
+          });
+        });
+      },
+      showProvince(maxValue) {
+        var _this = this;
+        var badArr = _this.dituData.map(item => ({
+          name: item.name,
+          value: item.value,
+          text: item.text
+        }))
+        var dsaArr = _this.dituData.map(item => ({
+          name: item.name,
+          value: [item.latitude, item.longitude, item.value],
+          qianzhi: item.belowStandardNum,
+          houzhi: item.value,
+          text: item.text
+        }))
+        // console.log(dsaArr, 'dsaArr');
+        const myChart = echarts.init(document.getElementById("echarts"));
+        // const uploadedDataURL = parent.IFM_CONTEXT + `/static/first/busicommon/map/310000.geoJson`;
+        const uploadedDataURL = parent.IFM_CONTEXT + `/static/first/busicommon/map/${mtlType.areaCode}.geoJson`;
+        axios.get(uploadedDataURL).then(res => {
+          const geoJson = res.data;
+          const name = "bj";
+          echarts.registerMap(name, geoJson);
+          var option = {
+            backgroundColor: "#F3F3FB",
+            visualMap: {
+              right: "1%",
+              bottom: "5%",
+              seriesIndex: 0,
+              textStyle: {
+                color: '#494941'
+              },
+              splitList: _this.rulesOfColor,
+            },
+            // visualMap: {
+            //   // min: 0,
+            //   // max: maxValue,
+            //   right: "5%",
+            //   bottom: "5%",
+            //   calculable: true,
+            //   inRange: {
+            //     color: ["#74D6FB", "#73C3FE", "#B2A5FC"]
+            //   },
+            //   textStyle: {
+            //     color: "#000",
+            //     opacity: 0.7
+            //   },
+            //   seriesIndex: [0],
+            // },
+            tooltip: {
+              show: true,
+              formatter: function (params) {
+                return params.data ? params.data.text : "";
+              }
+            },
+            geo: {
+              show: true,
+              map: name,
+              zoom: 1.2,
+              label: {
+                normal: {
+                  show: false
+                },
+                emphasis: {
+                  show: false,
+                }
+              },
+              roam: true,
+              itemStyle: {
+                normal: {
+                  color: 'rgba(248,231,28,0.9)',
+                  // shadowBlur: 8,
+                  borderColor: "#CAC8BF",
+                  areaColor: "#D4DAFD",
+                  borderWidth: 3
+                },
+                emphasis: {
+                  areaColor: "#CAC8BF",
+                  borderWidth: 0
+                }
+              },
+            },
+            series: [
+              {
+                type: "map",
+                map: name,
+                geoIndex: 0,
+                roam: true, //是否允许缩放
+                itemStyle: {
+                  normal: {
+                    areaColor: '#031525',
+                    borderColor: '#3B5077',
+                  },
+                  emphasis: {
+                    areaColor: '#2B91B7'
+                  }
+                },
+
+                data: badArr
+                // layoutSize: "95%",
+                // animation: false,
+                // layoutCenter: ["50%", "50%"], //地图位置
+                // animationDurationUpdate: 1000,
+                // animationEasingUpdate: 'quinticInOut'
+              },
+              // {
+              //   type: 'effectScatter',
+              //   coordinateSystem: 'geo',
+              //   // z: 10,
+              //   data: [],
+              //   symbolSize: 10,
+              //   // showEffectOn: 'render',
+              //   // rippleEffect: {
+              //   //   brushType: 'stroke'
+              //   // },
+              //   itemStyle: {
+              //     normal: {
+              //       show: true,
+              //       color: '#FFF300',
+              //       shadowBlur: 10,
+              //       shadowColor: '#BC781B'
+              //     }
+              //   },
+              //   rippleEffect: {
+              //     period: 2,
+              //     brushType: 'stroke',
+              //     scale: 3
+              //   },
+              //   // label: {
+              //   //   normal: {
+              //   //     show: true,
+              //   //     formatter: function (params) {
+              //   //       return params.data ? params.data.text : "";
+              //   //     },
+              //   //     position: 'top',
+              //   //     distance: 24,
+              //   //     backgroundColor: '#C6DE0E',
+              //   //     padding: [2, 8],
+              //   //     borderRadius: 3,
+              //   //     lineHeight: 24,
+              //   //     verticalAlign: 'middle',
+              //   //     color: '#fff',
+              //   //     z: 11,
+              //   //     rich: {
+              //   //       fline: {
+              //   //         padding: [0, 10],
+              //   //         color: '#ffffff'
+              //   //       }
+              //   //     }
+              //   //   },
+              //   //   emphasis: {
+              //   //     show: false,
+              //   //     textStyle: {
+              //   //       color: "#000",
+              //   //       opacity: 0.7
+              //   //     }
+              //   //   }
+              //   // },
+              // },
+            ]
+          }
+
+          myChart.setOption(option);
+
+          function getRandomArrayElements(arr, count) {
+            var shuffled = arr.slice(0), i = arr.length, min = i - count, temp, index;
+            while (i-- > min) {
+              index = Math.floor((i + 1) * Math.random());
+              temp = shuffled[index];
+              shuffled[index] = shuffled[i];
+              shuffled[i] = temp;
+            }
+            return shuffled.slice(min);
+          }
+          var newArr = [];
+          // setInterval(function () {
+          //   newArr = getRandomArrayElements(dsaArr, 4);
+          //   option.series[1].data = newArr;
+          myChart.setOption(option);
+          // }, 2000)
+
+          // 屏幕响应并对页面进行改变
+          window.onresize = () => {
+            myChart.resize();
+          };
+        });
+      }
+    }
+  });
+</script>
+
+<style>
+  .head-time {
+    height: 40px;
+    margin-top: 5px;
+    margin-right: 10px;
+  }
+
+  .block {
+    float: right;
+  }
+
+  .content-area {
+    width: 100%;
+    height: calc(100% - 50px) !important;
+  }
+
+  .el-input__inner {
+    width: 127px !important;
+  }
+
+  .el-range-separator {
+    font-size: 12px !important;
+  }
+
+  .el-input__inner {
+    height: 30px !important;
+    line-height: 30px !important;
+  }
+
+  .el-range__icon,
+  .el-range-separator {
+    line-height: 23px !important;
+  }
+
+  .el-date-editor .el-range-input,
+  .el-date-editor .el-range-separator {
+    font-size: 12px !important;
+  }
+
+  .el-date-editor .el-range-input {
+    width: 54% !important;
+  }
+
+  .el-date-editor .el-range__close-icon {
+    width: 0px !important;
+  }
+
+  /* 改日期大小 */
+  .el-picker-panel {
+    z-index: 2007;
+    top: 10px !important;
+    left: 0 !important;
+  }
+
+  .el-date-range-picker {
+    width: 420px !important;
+  }
+
+  .el-date-table {
+    font-size: 12px;
+  }
+
+  .el-date-table td {
+    padding: 0 !important;
+  }
+
+  .el-date-range-picker__header div {
+    font-size: 13px !important;
+  }
+
+  .el-date-range-picker .el-picker-panel__body {
+    min-width: 113px !important;
+  }
+
+  .el-date-table td,
+  .el-date-table td div {
+    height: 20px !important;
+  }
+
+  .el-popper[x-placement^=bottom] {
+    margin-top: -10px !important;
+  }
+
+  .el-date-range-picker__content {
+    padding: 7px 16px 16px !important;
+  }
+</style>

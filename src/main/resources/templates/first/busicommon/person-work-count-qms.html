@@ -1,0 +1,149 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/qms/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/qms/css/renyuan.css}" />
+
+<div id="app">
+    <div class="head-time" v-if="showDate">
+        <div class="block" size="mini">
+            <el-select size="mini" v-model="timeValue" placeholder="请选择" @blur="changeData">
+                <el-option style="float:right;" v-for="item in timeOptions" :key="item.value" :label="item.label"
+                    :value="item.value">
+                </el-option>
+            </el-select>
+        </div>
+    </div>
+    <!-- 检测进度 -->
+    <el-row :class="showDate?'chart-content':'chart-content2'">
+        <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" style="width:100%;height:100%;">
+            <div class="baifenbai" id="columnar"></div>
+        </el-col>
+    </el-row>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+    var urlValue = getRequestParam(document.URL);
+    if (urlValue.type == undefined) {
+        urlValue.type = "";
+    }
+    const app = new Vue({
+        el: "#app",
+        data: {
+            workloadData: [
+                /*  { name: "张学友", value: 26 },
+                 { name: "方大同", value: 38 },
+                 { name: "蔡依林", value: 75 },
+                 { name: "陈晓", value: 89 },
+                 { name: "萧敬腾", value: 98 },
+                 { name: "侯佩岑", value: 78 },
+                 { name: "朱茵", value: 38 },
+                 { name: "许嵩", value: 46 }, */
+            ],
+            timeType: "month",
+            timeValue: "",
+            chart: null
+        },
+        created: function () {
+            // 设置时间选择框内容
+            this.timeFilter(this.timeType);
+            this.getData();
+        },
+        methods: {
+            // 设置时间选择框内容
+            timeFilter(type) {
+                const self = this;
+                const options = [];
+                const newTime = new Date;
+                if (type === "year") {
+                    const year = newTime.getFullYear();
+                    self.timeValue = year;
+                    for (let i = 0; i < 3; i++) {
+                        options.push({
+                            value: year - i,
+                            label: year - i
+                        })
+                    }
+                }
+                if (type === "month") {
+                    const year = newTime.getFullYear();
+                    const month = newTime.getMonth() + 1;
+                    self.timeValue = `${year}/${month > 9 ? month : "0" + month}`;
+                    for (let y = 0; y < 3; y++) {
+                        for (let i = 1; i <= 12; i++) {
+                            options.push({
+                                value: `${year - y}/${i > 9 ? i : "0" + i}`,
+                                label: `${year - y}/${i > 9 ? i : "0" + i}`
+                            })
+                        }
+                    }
+                    options.reverse();
+                }
+                self.timeOptions = options;
+            },
+            // 改变接口
+            changeData() {
+                if (this.chart){
+                    this.chart.destroy();
+                }
+                this.getData();
+            },
+            getData() {
+                const this_ = this;
+                const formData = new FormData();
+                if (this_.timeType && this_.timeValue) {
+                    formData.append(this_.timeType, this_.timeValue);
+                }
+                parent.Gikam.post(parent.IFM_CONTEXT + '/first/busicommon/personworkcount/queries/' + urlValue.type, formData).done(function (data) {
+                    var vueData = [];
+                    if (data.length == 0) return;
+                    for (var i = 0; i < data.length; i++) {
+                        var tem = {};
+                        tem.name = data[i].name;
+                        tem.value = parseInt(data[i].value);
+                        vueData.push(tem);
+                    }
+                    this_.workloadData = vueData;
+                }).done(function () {
+                    this_.$nextTick(() => {
+                        this_.drawColumnar();
+                    });
+                });
+            },
+            drawColumnar() {
+                this.chart = new G2.Chart({
+                    container: "columnar",
+                    autoFit: true,
+                    padding: [30, 30, 45, 45]
+                });
+                this.chart.data(this.workloadData);
+
+                this.chart.scale("value", {
+                    nice: true,
+                });
+
+                this.chart.tooltip({
+                    showMarkers: false,
+                });
+                this.chart.interaction("element-active");
+
+                this.chart.legend(false);
+                this.chart
+                    .interval()
+                    .position("name*value")
+                    .color("value", (val) => {
+                        if (val < 50) {
+                            return "#66CAFB";
+                        }
+                        return "#28E9EF";
+                    })
+                    ;
+
+                this.chart.render();
+            },
+
+        }
+    });
+</script>

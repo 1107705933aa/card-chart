@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="240px" height="164px" viewBox="0 0 240 164" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>投影_待处理</title>
+    <defs>
+        <filter x="-19.9%" y="-28.8%" width="139.8%" height="157.7%" filterUnits="objectBoundingBox" id="filter-1">
+            <feGaussianBlur stdDeviation="10" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+        <filter x="-44.1%" y="-28.8%" width="188.3%" height="157.7%" filterUnits="objectBoundingBox" id="filter-2">
+            <feGaussianBlur stdDeviation="10" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+        <linearGradient x1="29.4371506%" y1="100%" x2="68.3047694%" y2="28.2593882%" id="linearGradient-3">
+            <stop stop-color="#FFDA83" offset="0%"></stop>
+            <stop stop-color="#FFC35A" offset="100%"></stop>
+        </linearGradient>
+        <filter x="-45.0%" y="-28.8%" width="190.0%" height="157.7%" filterUnits="objectBoundingBox" id="filter-4">
+            <feGaussianBlur stdDeviation="10" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="投影_待处理" transform="translate(30.000000, 30.000000)">
+            <path d="M4,0 L175.590001,0 C177.79914,1.52910644e-14 179.590001,1.790861 179.590001,4 L179.590001,100 C179.590001,102.209139 177.79914,104 175.590001,104 L4,104 C1.790861,104 2.705415e-16,102.209139 0,100 L0,4 C-2.705415e-16,1.790861 1.790861,4.05812251e-16 4,0 Z" id="蒙版" opacity="0.6"></path>
+            <path d="M175.590001,0.0026983544 C177.79914,0.0026983544 179.590001,1.79355936 179.590001,4.00269835 L179.590001,100.002698 C179.590001,102.211837 177.79914,104.002698 175.590001,104.002698 L66,104.004095 C66.4312692,99.7288951 66.6521592,95.3915926 66.6521592,91.0026984 C66.6521592,55.4050112 52.1206949,23.2013294 28.6661134,0 L175.590001,0.0026983544 Z" id="路径" fill="#DADBE3" opacity="0.6" filter="url(#filter-1)"></path>
+            <path d="M29.9701287,0 C53.4247103,23.2013294 67.9561746,55.4050112 67.9561746,91.0026984 C67.9561746,95.3912499 67.7353191,99.7282179 67.3041164,104.003094 L4,104.003094 C1.790861,104.003094 0,102.211837 0,100.002698 L0,4.00269835 C0,1.79355936 1.790861,0.0026983544 4,0.0026983544 L29.9701287,0 Z" id="路径" fill="#FFF8EE" opacity="0.6" filter="url(#filter-2)"></path>
+            <path d="M66.6961175,91.001493 C66.6961175,95.3942985 66.4600813,99.7319748 66,104.002531 L4,104.002531 C1.790861,104.002531 0,102.210632 0,100.001493 L0,4.00149296 C0,1.79235396 1.790861,0.0014929638 4,0.0014929638 L24.9216167,0 C50.4992788,22.0068464 66.6961175,54.6126825 66.6961175,91.001493 Z" id="路径" fill="url(#linearGradient-3)" opacity="0.200642885" filter="url(#filter-4)"></path>
+        </g>
+    </g>
+</svg>

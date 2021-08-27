@@ -1,0 +1,306 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+
+<style scoped>
+  .el-select-dropdown {
+    height: 80% !important;
+  }
+</style>
+<div id="app">
+  <!-- 柱状图 -->
+  <div class="head-time" v-if="showDate">
+    <div class="block" size="mini">
+      <!-- <el-select size="mini" v-model="timeValue" placeholder="请选择" @blur="changeData">
+        <el-option v-for="item in timeOptions" :key="item.value" :label="item.label" :value="item.value">
+        </el-option>
+      </el-select> -->
+      <el-date-picker :picker-options="pickerOptions" v-model="timeValue" type="month" placeholder="选择月"
+        @blur="changeData" size="mini">
+      </el-date-picker>
+    </div>
+  </div>
+  <el-row :class="showDate?'chart-content':'chart-content2'">
+    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="baifenbai">
+      <div :id="chartId" class="baifenbai"></div>
+    </el-col>
+  </el-row>
+</div>
+
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      chartId: "columnar",
+      timeType: "month",
+      showDate: true,
+      timeValue: new Date(),
+      timeOptions: [],
+      pickerOptions: {
+        disabledDate(time) {
+          let minYear = new Date().getFullYear() - 2
+          return time > Date.now() || time.getTime() < new Date(JSON.stringify(minYear))
+        }
+      },
+      legendType: {
+        本期到样数: {
+          stack: "dynum",
+          color: "#6692FB"
+        },
+        到样完成数: {
+          stack: "dynum",
+          color: "#759CE7"
+        },
+        到样未完成数: {
+          stack: "dynum",
+          color: "#B0C2F0"
+        },
+        到样应收费: {
+          stack: "dyfei",
+          color: "#EF6741"
+        },
+        到样已收费: {
+          stack: "dyfei",
+          color: "#FD907B"
+        },
+        到样欠收费: {
+          stack: "dyfei",
+          color: "#F8C3B5"
+        },
+        本期完成数: {
+          stack: "wcnum",
+          color: "#59CF9F"
+        },
+        完成应收费: {
+          stack: "wcfei",
+          color: "#EDBD1D"
+        },
+        完成已收费: {
+          stack: "wcfei",
+          color: "#FBD33E"
+        },
+        完成欠收费: {
+          stack: "wcfei",
+          color: "#F3E7AE"
+        }
+      },
+      chartData: [],
+    },
+    created() {
+      if (urlValue.date != null && urlValue.date != undefined && urlValue.date != "") {
+        this.showDate = urlValue.date;
+      }
+      // 设置时间选择框内容
+      // this.timeFilter(this.timeType);
+      // 获取数据
+      this.getData();
+    },
+    mounted() {
+      this.drawLineChart([]);
+    },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      // 设置时间选择框内容
+      timeFilter(type) {
+        const self = this;
+        const options = [];
+        const newTime = new Date;
+        if (type === "year") {
+          const year = newTime.getFullYear();
+          self.timeValue = year;
+          for (let i = 0; i < 3; i++) {
+            options.push({
+              value: year - i,
+              label: year - i
+            })
+          }
+        }
+        if (type === "month") {
+          const year = newTime.getFullYear();
+          const month = newTime.getMonth() + 1;
+          self.timeValue = `${year}/${month > 9 ? month : "0" + month}`;
+          for (let y = 0; y < 3; y++) {
+            for (let i = 1; i <= 12; i++) {
+              options.push({
+                value: `${year - y}/${i > 9 ? i : "0" + i}`,
+                label: `${year - y}/${i > 9 ? i : "0" + i}`
+              })
+            }
+          }
+          options.reverse();
+        }
+        self.timeOptions = options;
+      },
+      getData() {
+        const self = this;
+        const formData = new FormData();
+        if (self.timeValue != "" && self.timeValue != null && self.timeValue != undefined) {
+          let year = self.timeValue.getFullYear();
+          let month = self.timeValue.getMonth() + 1;
+          let timeValue = `${year}/${month > 9 ? month : "0" + month}`;
+          if (self.timeType && self.timeValue) {
+            formData.append(self.timeType, timeValue);
+          }
+        }
+        axios.post(parent.IFM_CONTEXT + '/first/busicommon/inspectiondept-statistic/queries/' + urlValue.type, formData)
+          .then(({ data }) => {
+            self.chartData = data;
+            self.$nextTick(() => {
+              self.drawLineChart();
+            });
+          });
+      },
+      // 改变接口
+      changeData() {
+        this.getData();
+      },
+      // 绘画图表
+      drawLineChart() {
+        let myChart;
+
+        const typeData = sameMultCond(this.chartData, "info", ["type"])
+        const xData = sameMultCond(this.chartData, "info", ["name"]).map(x => x.name);
+        const series = [];
+        const legendData = [];
+        const legendType = this.legendType;
+
+        for (let key in legendType) {
+          legendData.push(key);
+        }
+
+        const colorList = ["rgba(227, 248, 241, 0.8)", "rgba(225, 238, 208, 0.8)"]
+
+        typeData.forEach((t, ti) => {
+          const valueData = [];
+          for (let x = 0; x < xData.length; x++) {
+            const numIndex = t.info.findIndex(f => f.name === xData[x]);
+            valueData.push(numIndex >= 0 ? t.info[numIndex].value : 0);
+          }
+          series.push({
+            name: t.type,
+            type: 'bar',
+            stack: legendType[t.type].stack,
+            barWidth: '20px',
+            itemStyle: {
+              color: legendType[t.type].color
+            },
+            data: valueData
+          })
+        });
+
+        // 基于准备好的dom，初始化echarts实例
+        if (myChart !== null && myChart !== "" && myChart !== undefined) {
+          myChart.dispose(); //销毁
+        }
+        myChart = echarts.init(document.getElementById(this.chartId));
+        var testParams;
+        myChart.on('mouseover', function (params) {
+          testParams = params;
+        });
+        const option = {
+          title: {
+            subtext: '单位：份',
+            left: "3%",
+          },
+          grid: {
+            left: "3%",
+            right: "3%",
+            top: "22%",
+            bottom: "6%",
+            containLabel: true
+          },
+          tooltip: {
+            trigger: 'axis',
+            formatter: (params) => {
+              let start;
+              let end;
+              if (testParams != undefined) {
+                switch (testParams.componentIndex) {
+                  case 0: case 1: case 2:
+                    start = 0;
+                    end = 3;
+                    break;
+                  case 3: case 4: case 5:
+                    start = 3;
+                    end = 6;
+                    break;
+                  case 6:
+                    start = 6;
+                    end = 7;
+                    break;
+                  case 7: case 8: case 9:
+                    start = 7;
+                    end = 10;
+                    break;
+                }
+                let htmlStr = '';
+                for (let i = start; i < end; i++) {
+                  htmlStr += params[i].name + '<br/>';
+                  htmlStr += '<div>';
+                  //为了保证和原来的效果一样，复制的是：param.marker的源码，圆点样式：param.color
+                  htmlStr += '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:' + params[i].color + ';"></span>';
+                  //圆点后面显示的名称
+                  htmlStr += params[i].seriesName + '：' + params[i].value;
+                  htmlStr += '</div>';
+                }
+                return htmlStr;
+              }
+            },
+          },
+          legend: {
+            top: '5%',
+            itemGap: 5,
+            selectedMode: false,
+            textStyle: {
+              color: '#556677',
+            },
+            data: legendData,
+          },
+          yAxis: [{
+            type: 'value',
+            axisLabel: {
+              show: true,
+              interval: 'auto',
+              formatter: '{value} '
+            },
+            splitLine: {
+              show: true,
+              lineStyle: {
+                type: 'dashed'
+              }
+            },
+            show: true
+
+          }],
+          xAxis: [{
+            type: 'category',
+            axisLabel: {
+              interval: 0,
+              show: true,
+              splitNumber: 15,
+              textStyle: {
+                fontSize: 10,
+                color: '#000'
+              }
+            },
+            data: xData,
+          }],
+          series
+        };
+        myChart.setOption(option);
+        // 屏幕响应并对页面进行改变
+        window.addEventListener("resize", () => myChart.resize(), false);
+      }
+    }
+  });
+</script>

@@ -1,0 +1,135 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/qms/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/qms/css/biaoage.css}" />
+
+<div id="app">
+    <el-row class="table-head">
+        <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8">样品编号</el-col>
+        <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8">样品名称</el-col>
+        <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8"> waferlD</el-col>
+        <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8"> 接样时间</el-col>
+        <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8"> 当前状态</el-col>
+    </el-row>
+    <div id="quality">
+        <div id="quality1" class="table-scroll">
+            <el-row class="table-content" v-for="(item, index) in handleData" :key="index">
+                <el-col :xs="4" :sm="4" :md="4" :lg="4" :xl="4" style="
+                  color: #0078ff;
+                  text-decoration: underline;
+                  font-weight: 700;
+                ">{{ item.orderNo }}</el-col>
+                <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5" style="color:#CAD2DB;">{{
+                    item.orderName
+                    }}</el-col>
+                <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5" style="color:#CAD2DB;">{{
+                    item.waferId
+                    }}</el-col>
+                <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5" style="color:#CAD2DB;">{{
+                    item.receivedTime
+                    }}</el-col>
+                <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5" style="color:#CAD2DB;">{{
+                    item.status
+                    }}</el-col>
+            </el-row>
+        </div>
+        <div id="quality2"></div>
+    </div>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+    var urlValue = getRequestParam(document.URL);
+    if (urlValue.type == undefined) {
+        urlValue.type = "";
+    }
+    const app = new Vue({
+        el: "#app",
+        data: {
+            handleData: [
+                /* {
+                    sort: "1",
+                    name: "测试1",
+                    value: "2",
+                },
+                {
+                    sort: "2",
+                    name: "测试2",
+                    value: "4",
+                },
+                {
+                    sort: "3",
+                    name: "测试3",
+                    value: "5",
+                },
+                {
+                    sort: "1",
+                    name: "测试4",
+                    value: "2",
+                },
+                {
+                    sort: "25",
+                    name: "测试5",
+                    value: "2",
+                },
+                {
+                    sort: "2",
+                    name: "测试6",
+                    value: "2",
+                },
+                {
+                    sort: "7",
+                    name: "测试7",
+                    value: "21",
+                },
+                {
+                    sort: "8",
+                    name: "测试8",
+                    value: "5",
+                }, */
+            ],
+        },
+        created: function () {
+            this.getData();
+        },
+
+        // 实例被挂载后调用
+        mounted: function () {
+            var _this = this
+            setTimeout(function () {
+                _this.infiniteScrolling("quality");
+            }, 3000)
+        },
+        destroyed: function () {
+            clearInterval(this.qualityInt);
+        },
+        // 在 `methods` 对象中定义方法
+        methods: {
+            getData() {
+                var this_ = this;
+                parent.Gikam.post(parent.IFM_CONTEXT + '/first/busicommon/orderStatistic').done(function (data) {
+                    if (data.length == 0) return;
+                    this_.handleData = data;
+                });
+            },
+            infiniteScrolling(name) {
+                const infinite = document.getElementById(name);
+                const infinite1 = document.getElementById(`${name}1`);
+                const infinite2 = document.getElementById(`${name}2`);
+                infinite2.innerHTML = infinite1.innerHTML;
+                this[`${name}Int`] = setInterval(() => {
+                    if (infinite2.offsetHeight - infinite.scrollTop <= 0) {
+                        // 当滚动至infinite1与infinite2交界时
+                        infinite.scrollTop -= infinite1.offsetHeight;
+                    } else {
+                        infinite.scrollTop += 1;
+                    }
+                }, 100);
+            }
+        }
+    });
+</script>

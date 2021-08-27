@@ -1,0 +1,270 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/qms/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/qms/css/gantetu.css}" />
+
+<div id="app">
+    <div class="baifenbai" id="chartmain2"></div>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+
+<script>
+    var urlValue = getRequestParam(document.URL);
+    if (urlValue.type == undefined) {
+        urlValue.type = "";
+    }
+    const app = new Vue({
+        el: "#app",
+        data: {
+            ganteData2: [
+                {
+                    endDate: "2020-05-10",
+                    equipname: "设备一",
+                    startDate: "2020-01-01",
+                    step: "计划工期"
+                },
+                {
+                    endDate: "2020-01-20",
+                    equipname: "设备一",
+                    startDate: "2020-01-01",
+                    step: "可行性研究阶段"
+                }, {
+                    endDate: "2020-02-20",
+                    equipname: "设备一",
+                    startDate: "2020-01-20",
+                    step: "初步设计阶段"
+                }, {
+                    endDate: "2020-02-30",
+                    equipname: "设备一",
+                    startDate: "2020-02-20",
+                    step: "施工图设计阶段"
+                }, {
+                    endDate: "2020-03-20",
+                    equipname: "设备一",
+                    startDate: "2020-02-30",
+                    step: "项目实施阶段"
+                }, {
+                    endDate: "2020-04-25",
+                    equipname: "设备一",
+                    startDate:
+                        "2020-03-20",
+                    step: "项目验收阶段"
+                }, {
+                    endDate: "2020-05-01",
+                    equipname: "设备二",
+                    startDate: "2020-01-01",
+                    step: "计划工期"
+                }, {
+                    endDate: "2020-01-30",
+                    equipname: "设备二",
+                    startDate: "2020-01-01",
+                    step: "可行性研究阶段"
+                }, {
+                    endDate: "2020-02-25",
+                    equipname: "设备二",
+                    startDate: "2020-01-30",
+                    step: "初步设计阶段"
+                }, {
+                    endDate: "2020-03-28",
+                    equipname: "设备二",
+                    startDate: "2020-02-25",
+                    step: "施工图设计阶段"
+                }, {
+                    endDate: "2020-04-25",
+                    equipname: "设备二",
+                    startDate: "2020-03-28",
+                    step: "项目实施阶段"
+                },
+                {
+                    endDate: "2020-05-03",
+                    equipname: "设备二",
+                    startDate: "2020-04-25",
+                    step: "项目验收阶段"
+                }
+            ]
+        },
+        created: function () {
+            this.$nextTick(() => {
+                this.drawGatt2();
+            });
+        },
+
+        mounted: function () {
+        },
+
+        methods: {
+            drawGatt2() {
+                var data = this.ganteData2
+                var corlorArr = ["skyblue", "#3388FF", "#66CAFB", "#B5E3FC", "#FFD67E", "#FFEABF", "#FFE3DB", "Aquamarine", "Blue", "Coral", "DeepPink", "OrangeRed"];
+                var this_ = this;
+                var equipnameArr = [];
+                var stepArr = [];
+                var seriesArr = [];
+                var axis;
+                data.map(function (item) {
+                    if (equipnameArr.indexOf(item.equipname) == -1) {
+                        equipnameArr.push(item.equipname);
+                    }
+                    if (stepArr.indexOf(item.step) == -1) {
+                        stepArr.push(item.step);
+                    }
+                });
+                for (var i = 0; i < stepArr.length; i++) {
+                    var startDateArr = [];
+                    var endDateArr = [];
+                    data.map(function (item) {
+                        if (item.step == stepArr[i]) {
+                            axis = item.startDate;
+                            startDateArr.push(new Date(item.startDate));
+                            endDateArr.push(new Date(item.endDate));
+                        }
+                    });
+                    var time = {
+                        start: startDateArr,
+                        end: endDateArr
+                    }
+                    var stepname = 'step' + i;
+                    this_.ganteData2[stepname] = time;
+                    var sArr = [
+                        {
+                            name: stepArr[i],
+                            type: "bar",
+                            stack: "总量" + i,
+                            label: {
+                                normal: {
+                                    show: true,
+                                    color: "#CAD2DB",
+                                    position: "right",
+                                    formatter: function (params) {
+                                        return params.seriesName
+                                    }
+                                }
+                            },
+                            itemStyle: {
+                                normal: {
+                                    color: corlorArr[i],
+                                    borderColor: "#111449",
+                                    borderWidth: 0
+                                }
+                            },
+                            zlevel: -1,
+                            data: endDateArr
+                        },
+                        {
+                            name: stepArr[i],
+                            type: "bar",
+                            stack: "总量" + i,
+                            itemStyle: {
+                                normal: {
+                                    color: "#111449",
+                                }
+                            },
+                            zlevel: -1,
+                            z: 3,
+                            data: startDateArr
+                        }
+                    ];
+                    Array.prototype.push.apply(seriesArr, sArr);
+                }
+
+                var _this = this
+                //指定图表的配置项和数据
+                var option = {
+                    backgroundColor: "",
+                    legend: {
+                        data: stepArr,
+                        top: 10,
+                        textStyle: {
+                            color: '#CAD2DB',
+                            fontSize: 12,
+                        },
+                    },
+                    grid: {
+                        containLabel: true,
+                        show: false,
+                        right: 80,
+                        left: 0,
+                        bottom: 40,
+                        top: 50
+                    },
+                    xAxis: {
+                        type: "time",
+                        axisLabel: {
+                            "show": true,
+                            "interval": 0,
+                            "color": "#CAD2DB"
+                        },
+                        splitLine: {
+                            show: false
+                        }
+                    },
+                    yAxis: {
+                        axisLabel: {
+                            show: true,
+                            color: "#CAD2DB",
+                            interval: 0,
+                            formatter: function (value, index) {
+                                var last = ""
+                                var max = 5;
+                                var len = value.length;
+                                var hang = Math.ceil(len / max);
+                                if (hang > 1) {
+                                    for (var i = 0; i < hang; i++) {
+                                        var start = i * max;
+                                        var end = start + max;
+                                        var temp = value.substring(start, end) + "\n";
+                                        last += temp; //凭借最终的字符串
+                                    }
+                                    return last;
+                                } else {
+                                    return value;
+                                }
+                            }
+                        },
+                        data: equipnameArr
+                    },
+                    tooltip: {
+                        trigger: "axis",
+                        formatter: function (params) {
+                            var res = "";
+                            var name = "";
+                            var start0 = "";
+                            var start = "";
+                            var end0 = "";
+                            var end = "";
+                            for (var i in params) {
+                                var k = i % 2;
+                                if (!k) { //偶数
+                                    start0 = params[i].data;
+                                    start = start0.getFullYear() + "-" + (start0.getMonth() + 1) + "-" + start0.getDate();
+                                }
+                                if (k) { //奇数
+                                    name = params[i].seriesName;
+                                    end0 = params[i].data;
+                                    end = end0.getFullYear() + "-" + (end0.getMonth() + 1) + "-" + end0.getDate();
+                                    res += name + " : " + end + "~" + start + "</br>";
+                                }
+                            }
+                            return res;
+                        }
+                    },
+                    series: seriesArr
+                }
+                //获取dom容器
+                var myChart = echarts.init(document.getElementById('chartmain2'));
+                // 使用刚指定的配置项和数据显示图表。
+                myChart.setOption(option);
+
+                window.onresize = () => {
+                    // 基于准备好的dom，初始化echarts实例
+                    myChart.resize();
+                };
+            },
+
+        }
+    });
+</script>

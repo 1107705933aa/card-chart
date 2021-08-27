@@ -1,0 +1,244 @@
+<th:block th:replace="module/gikam/home"/>
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<style>
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  ul,
+  li {
+    list-style: none;
+    text-decoration: none;
+  }
+
+  .entrustment-input {
+    padding: 40px;
+    box-sizing: border-box;
+  }
+
+  .entrustment-cont {
+    margin: 0 30px;
+    padding: 50px 0;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    border: 1px solid #ccc;
+  }
+
+  .entrustment-cont .name {
+    padding: 10px 50px;
+    border-radius: 5px;
+    user-select: none;
+  }
+
+  .entrustment-cont .name.end {
+    cursor: pointer;
+    background-color: rgba(4, 242, 28, 1);
+  }
+
+  .entrustment-cont .name.run {
+    background-color: rgba(2, 167, 240, 1);
+  }
+
+  .entrustment-cont .name.start {
+    border: 1px solid #ccc;
+  }
+
+  .entrustment-cont .icon {
+    padding: 10px 0;
+  }
+
+  .entrustment-item:last-child .icon {
+    display: none;
+  }
+</style>
+
+<div id="app">
+  <!-- 柱状图 -->
+  <el-input placeholder="请输入委托单号" v-model="folderNo" class="entrustment-input">
+    <el-button slot="append" @click="getFolderPhone">查询</el-button>
+  </el-input>
+  <ul class="entrustment-cont">
+    <li class="entrustment-item" v-for="(item, index) in flowData" :key="index">
+      <el-popover v-if="item.state === 1" placement="top" width="200" trigger="click">
+        <p>开始时间：{{ item.startTime }}</p>
+        <p>结束时间：{{ item.endTime }}</p>
+        <span slot="reference" class="name" :class="classData[item.state - 1]">{{ item.name }}</span>
+      </el-popover>
+      <span v-else class="name" :class="classData[item.state - 1]">{{ item.name }}</span>
+      <span class="icon">——▶</span>
+    </li>
+  </ul>
+  <el-dialog :visible.sync="dialogFormVisible" width="400px">
+    <el-form :model="dialogForm" label-width="60px">
+      <el-form-item label="手机号">
+        <el-input v-model="dialogForm.phone"></el-input>
+      </el-form-item>
+      <el-form-item label="验证码">
+        <el-input style="width: 50%;" v-model="dialogForm.code"></el-input>
+        <el-button style="width: 45%;" :type="timeNum?'':'primary'" @click="getVerificationCode" :disabled="timeNum">
+          {{
+          timeNum ? timeNum
+          +'s重新获取' : '获取验证码'}}</el-button>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="dialogFormVisible = false">取 消</el-button>
+      <el-button type="primary" @click="getFolderInfo">确 定</el-button>
+    </div>
+  </el-dialog>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script>
+  // var urlValue = getRequestParam(document.URL);
+  // if (urlValue.type == undefined) {
+  //   urlValue.type = "";
+  // }
+  /*const parent = {
+    IFM_CONTEXT: "http://192.168.90.196:8090/lims"
+  }*/
+  const app = new Vue({
+    el: "#app",
+    data: {
+      folderNo: "",
+      flowTemp: [
+        {
+          name: "受理中",
+          startTime: "",
+          endTime: "",
+          state: 3
+        },
+        {
+          name: "检验中",
+          startTime: "",
+          endTime: "",
+          state: 3
+        },
+        {
+          name: "已完成",
+          startTime: "",
+          endTime: "",
+          state: 3
+        }
+      ],
+      flowData: [],
+      classData: ["end", "run", "start"],
+      dialogFormVisible: false,
+      dialogForm: {
+        phone: "",
+        code: ""
+      },
+      timeNum: 0
+    },
+    created() {
+      // if (urlValue.date != null && urlValue.date != undefined && urlValue.date != "") {
+      //   this.showDate = urlValue.date;
+      // }
+    },
+    mounted() { },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      // 获取数据
+      getFolderInfo() {
+        const self = this;
+        if (!self.dialogForm.code) {
+          return;
+        }
+        axios.post(parent.IFM_CONTEXT + '/open/secure/lims/module/sp/open-interfaces/check/captcha', {
+          folderNo: self.folderNo,
+          phone: self.dialogForm.phone,
+          code: self.dialogForm.code
+        })
+          .then(({ data }) => {
+            if (data.status == 200) {
+              self.dialogFormVisible = false;
+              self.flowData = self.flowTemp.map(t => {
+                const tItem = JSON.parse(JSON.stringify(t));
+                if (data.processcode == 1) {
+                  if (tItem.name === "受理中") {
+                    tItem.state = 2;
+                  }
+                } else if (data.processcode == 2) {
+                  if (tItem.name === "受理中") {
+                    tItem.state = 1;
+                    tItem.startTime = data.createdtime;
+                    tItem.endTime = data.audittime;
+                  } else if (tItem.name === "检验中") {
+                    tItem.state = 2;
+                  }
+                } else if (data.processcode == 3) {
+                  if (tItem.name === "受理中") {
+                    tItem.state = 1;
+                    tItem.startTime = data.createdtime;
+                    tItem.endTime = data.audittime;
+                  } else if (tItem.name === "检验中") {
+                    tItem.state = 1;
+                    tItem.startTime = data.audittime;
+                    tItem.endTime = data.firstapprovaltime;
+                  } else if (tItem.name === "已完成") {
+                    tItem.state = 2;
+                  }
+                }
+                return tItem;
+              });
+            }
+          });
+      },
+      // 委托单位电话查询
+      getFolderPhone() {
+        const self = this;
+        if (!self.folderNo) {
+          return;
+        }
+        axios({
+          url: parent.IFM_CONTEXT + '/open/secure/lims/module/sp/open-interfaces/folder/phone',  //必需
+          method: 'post',  //请求的方式，默认是get
+          headers: {"Content-Type": "application/json"},  //设置请求头
+          data: {
+            folderNo: self.folderNo
+          }
+        })
+          .then(({ data }) => {
+            if (data.status == 200) {
+              const NowPhone = data.phone || data.call;
+              console.log(self.dialogForm.phone);
+              if (NowPhone === self.dialogForm.phone) {
+                self.getFolderInfo();
+              } else {
+                self.dialogForm.phone = NowPhone;
+                self.dialogFormVisible = true;
+                self.dialogForm.code = "";
+              }
+              
+            }
+          });
+      },
+      // 获取验证码
+      getVerificationCode() {
+        const self = this;
+        if (!self.dialogForm.phone) {
+          return;
+        }
+        axios.post(parent.IFM_CONTEXT + '/open/secure/lims/module/sp/open-interfaces/phone/captcha', {
+          phone: self.dialogForm.phone
+        })
+          .then(({ data }) => {
+            if (data.status == 200) {
+              self.timeNum = 120;
+              const vodeInt = setInterval(() => {
+                self.timeNum -= 1;
+                if (self.timeNum <= 0) {
+                  clearInterval(vodeInt);
+                }
+              }, 1000)
+            }
+          });
+      }
+    }
+  });
+</script>

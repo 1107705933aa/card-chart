@@ -1,0 +1,135 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/newwater.css}" />
+<div id="app" style="width:100%;height:100%;">
+    <!-- 监控仪表盘 -->
+    <el-row class="dashboard-content content-scroll">
+        <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8" v-for="(item, index) in panelDataqw" :key="index+item"
+            style="height:100%;">
+            <Dashboard :totalvalue="totalvalue" :yibioap="item" :id="'dashboardss' + index.toString()"
+                style="width:100%;height:100%;" />
+        </el-col>
+    </el-row>
+</div>
+
+<template id="tmpl">
+    <div :id="id"></div>
+</template>
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2plot.min.js}"></script>
+
+<script>
+    var urlValue = getRequestParam(document.URL);
+    if (urlValue.type == undefined) {
+        urlValue.type = "";
+    }
+    Vue.component('Dashboard', {
+        template: '#tmpl',
+        props: {
+            id: {
+                type: String,
+                default: "",
+            },
+            yibioap: {
+                type: Object,
+                default: () => ({ name: "", value: 0 }),
+            },
+            totalvalue: {
+                type: Number,
+                default: 0
+            },
+        },
+        mounted() {
+            this.getwater();
+        },
+        methods: {
+            // 水波图
+            getwater() {
+                var self = this;
+                const liquidPlot = new G2Plot.Liquid(document.getElementById(self.id), {
+                    percent: self.yibioap.value / self.totalvalue,
+                    statistic: {
+                        title: {
+                            formatter: () => self.yibioap.value + ' ' + self.yibioap.name,
+                            style: ({ percent }) => ({
+                                fill: percent > 0.65 ? 'white' : 'rgba(44,53,66,0.85)',
+                            }),
+                        },
+                        content: {
+                            style: ({ percent }) => ({
+                                fontSize: 60,
+                                lineHeight: 1,
+                                fill: percent > 0.65 ? 'white' : 'rgba(44,53,66,0.85)',
+                            }),
+                            customHtml: (container, view, { percent }) => {
+                                const { width, height } = container.getBoundingClientRect();
+                                const d = Math.sqrt(Math.pow(width / 2, 2) + Math.pow(height / 2, 2));
+                                const text = `占比 ${(percent * 100).toFixed(0)}%`;
+                                const textWidth = G2Plot.measureTextWidth(text, { fontSize: 60 });
+                                const scale = Math.min(d / textWidth, 1);
+                                return `<div style="width:${d}px;display:flex;align-items:center;justify-content:center;font-size:${scale}em;line-height:${scale <= 1 ? 1 : 'inherit'
+                                    }">${text}</div>`;
+                            },
+                        },
+                    },
+                    liquidStyle: ({ percent }) => {
+                        function getColor() {
+                            var color = ["#FFFF99", "#B5FF91", "#94DBFF", "#FFBAFF", "#FFBD9D", "#C7A3ED", "#CC9898", "#8AC007", "#CCC007", "#FFAD5C"];
+                            var num = Math.ceil(Math.random() * 7) - 1;
+                            return color[num];
+                        }
+
+                        return {
+                        // fill: percent > 0.45 ? '#5B8FF9' : '#FAAD14',
+                        // stroke: percent > 0.45 ? '#5B8FF9' : '#FAAD14',
+                        fill: getColor(),
+                        stroke: getColor(),
+                    };
+
+
+                },
+                    color: () => '#5B8FF9',
+                });
+    liquidPlot.render();
+            }
+        },
+    })
+    const app = new Vue({
+        el: "#app",
+        data: {
+            // 监控仪表盘 值在0到100的区间
+            panelDataqw: [
+                // { name: "待接收", value: 20 },
+                // { name: "待检测", value: 80 },
+                // { name: "检测中", value: 45 },
+                // { name: "处理中", value: 90 },
+                // { name: "已完成", value: 15 },
+            ],
+            totalvalue: 0
+        },
+        // 实例被挂载后调用
+        created: function () {
+            this.getData();
+        },
+        // 在 `methods` 对象中定义方法
+        methods: {
+            getData() {
+                var this_ = this;
+                parent.Gikam.post(parent.IFM_CONTEXT + '/first/busicommon/waterwaveqms/queries/' + urlValue.type).done(function (data) {
+                    data.forEach((item => {
+                        this_.totalvalue += Number(item.value)
+                    }))
+                    if (Number(this_.totalvalue) == 0) {
+                        this_.totalvalue = 1;
+                    }
+                    this_.panelDataqw = data;
+                })
+            },
+        }
+    });
+</script>

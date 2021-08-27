@@ -1,0 +1,141 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<div id="app">
+  <!-- 柱状图 -->
+  <div class="head-time" v-if="showDate">
+    <div class="block">
+      <el-date-picker :picker-options="pickerOptions" @blur="changeData" size="mini" v-model="timeValue" type="year"
+        placeholder="选择年">
+      </el-date-picker>
+    </div>
+  </div>
+  <el-row :class="showDate?'chart-content':'chart-content2'">
+    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="baifenbai">
+      <div id="columnar" class="baifenbai"></div>
+    </el-col>
+  </el-row>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      chart: null,
+      timeData: ['', ''],
+      // 人员当前工作量
+      workloadData: [],
+      showDate: false,
+      timeType: "year",
+      timeValue: new Date(),
+      pickerOptions: {
+        disabledDate(time) {
+          let minYear = new Date().getFullYear() - 2
+          return time > Date.now() || time.getTime() < new Date(JSON.stringify(minYear))
+        }
+      },
+      unit: ""
+    },
+    created: function () {
+      if (urlValue.date != null && urlValue.date != undefined && urlValue.date != "") {
+        this.showDate = urlValue.date;
+      }
+      this.getData();
+    },
+    methods: {
+      changeData() {
+        if (this.chart){
+          this.chart.destroy();
+        }
+        this.getData();
+      },
+      getData() {
+        const this_ = this;
+        const formData = new FormData();
+        if (this_.timeType && this_.timeValue) {
+          formData.append(this_.timeType, this_.timeValue.getFullYear());
+        }
+        axios.post(parent.IFM_CONTEXT + '/first/busicommon/personworkcount/queries/' + urlValue.type, formData).then(function (data) {
+          var vueData = [];
+          data = data.data;
+          if (data[0].unit != "" && data[0].unit != undefined && data[0].unit != null) {
+            this_.unit = data[0].unit;
+          }
+          if (data.length == 0) return;
+          for (var i = 0; i < data.length; i++) {
+            var tem = {};
+            tem.name = data[i].name;
+            // tem.unit = data[i].unit;
+            tem.unit = "%";
+            tem.value = parseInt(data[i].value);
+            vueData.push(tem);
+          }
+          this_.workloadData = vueData;
+        }).then(function () {
+          this_.$nextTick(() => {
+            this_.drawColumnar();
+          });
+        });
+      },
+      // 柱状图
+      drawColumnar() {
+        var _this = this;
+        this.chart = new G2.Chart({
+          container: "columnar",
+          autoFit: true,
+        });
+        this.chart.data(this.workloadData);
+        this.chart.axis("name", {
+          tickLine: null,
+        });
+
+        this.chart.axis("value", {
+          label: {
+            formatter: (val) => {
+              return +val + _this.unit;
+            },
+          },
+        });
+
+        this.chart.scale("value", {
+          nice: true,
+        });
+
+        this.chart.tooltip({
+          showMarkers: false,
+          showTitle: false,
+        });
+        this.chart.interaction("element-active");
+
+        this.chart.legend(false);
+        this.chart
+          .interval()
+          .position("name*value")
+          .color("value", (val) => {
+            // if (val < 50) {
+            //   return "#ff4d4f";
+            // }
+            return "#73A0FA";
+          }).tooltip("name*value*unit", (name, value, unit) => {
+            return {
+              name: `${name}`,
+              value: +value + unit,
+            };
+          })
+          ;
+
+        this.chart.render();
+      },
+    }
+  });
+</script>

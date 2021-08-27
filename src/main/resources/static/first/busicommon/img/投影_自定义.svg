@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="239px" height="164px" viewBox="0 0 239 164" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>投影_自定义</title>
+    <defs>
+        <filter x="-20.3%" y="-28.8%" width="140.5%" height="157.7%" filterUnits="objectBoundingBox" id="filter-1">
+            <feGaussianBlur stdDeviation="10" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+        <filter x="-43.5%" y="-28.8%" width="187.0%" height="157.7%" filterUnits="objectBoundingBox" id="filter-2">
+            <feGaussianBlur stdDeviation="10" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+        <linearGradient x1="31.8296421%" y1="100%" x2="66.175006%" y2="28.2593882%" id="linearGradient-3">
+            <stop stop-color="#BCB0FF" offset="0%"></stop>
+            <stop stop-color="#7E7CFF" offset="100%"></stop>
+        </linearGradient>
+        <filter x="-47.8%" y="-28.8%" width="195.7%" height="157.7%" filterUnits="objectBoundingBox" id="filter-4">
+            <feGaussianBlur stdDeviation="10" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="投影_自定义" transform="translate(30.000000, 30.000000)">
+            <path d="M174.650002,0.0026983544 C176.859141,0.0026983544 178.650002,1.79355936 178.650002,4.00269835 L178.650002,100.002698 C178.650002,102.211837 176.859141,104.002698 174.650002,104.002698 L67.9334365,104.004095 C68.3647057,99.7288951 68.5855957,95.3915926 68.5855957,91.0026984 C68.5855957,55.4050112 54.0541314,23.2013294 30.5995499,0 L174.650002,0.0026983544 Z" id="路径备份-12" fill="#DADBE3" opacity="0.6" filter="url(#filter-1)"></path>
+            <path d="M30.9701287,0 C54.4247103,23.2013294 68.9561746,55.4050112 68.9561746,91.0026984 C68.9561746,95.3912499 68.7353191,99.7282179 68.3041164,104.003094 L4,104.003094 C1.790861,104.003094 0,102.211837 0,100.002698 L0,4.00269835 C0,1.79355936 1.790861,0.0026983544 4,0.0026983544 L30.9701287,0 Z" id="路径备份-13" fill="#F1F1FF" opacity="0.6" filter="url(#filter-2)"></path>
+            <path d="M62.6961175,91.001493 C62.6961175,95.3942985 62.4600813,99.7319748 62,104.002531 L4,104.002531 C1.790861,104.002531 0,102.210632 0,100.001493 L0,4.00149296 C0,1.79235396 1.790861,0.0014929638 4,0.0014929638 L20.9216167,0 C46.4992788,22.0068464 62.6961175,54.6126825 62.6961175,91.001493 Z" id="路径备份-14" fill="url(#linearGradient-3)" opacity="0.200642885" filter="url(#filter-4)"></path>
+        </g>
+    </g>
+</svg>

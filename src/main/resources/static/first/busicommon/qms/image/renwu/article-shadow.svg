@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="364px" height="164px" viewBox="0 0 364 164" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>投影_待审核文章</title>
+    <defs>
+        <filter x="-14.0%" y="-28.8%" width="128.0%" height="157.7%" filterUnits="objectBoundingBox" id="filter-1">
+            <feGaussianBlur stdDeviation="10" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+        <filter x="-22.7%" y="-28.8%" width="145.5%" height="157.7%" filterUnits="objectBoundingBox" id="filter-2">
+            <feGaussianBlur stdDeviation="10" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+        <linearGradient x1="0%" y1="85.1734081%" x2="94.5093212%" y2="34.7061718%" id="linearGradient-3">
+            <stop stop-color="#A8ECFF" offset="0%"></stop>
+            <stop stop-color="#5CD0FF" offset="100%"></stop>
+        </linearGradient>
+        <filter x="-24.2%" y="-28.8%" width="148.4%" height="157.7%" filterUnits="objectBoundingBox" id="filter-4">
+            <feGaussianBlur stdDeviation="10" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" opacity="0.6">
+        <g id="生产主面板" transform="translate(-34.000000, -148.000000)">
+            <g id="投影_待审核文章" transform="translate(64.000000, 178.000000)">
+                <polygon id="蒙版" points="0 0 304 0 304 104 0 104"></polygon>
+                <path d="M299.986401,0.00304980809 C302.19554,0.00304980809 303.986401,1.79391081 303.986401,4.00304981 L303.986401,100.00305 C303.986401,102.212189 302.19554,104.00305 299.986401,104.00305 L127.334242,104.004447 C127.765511,99.7292466 127.986401,95.391944 127.986401,91.0030498 C127.986401,55.4053627 113.454937,23.2016809 90.0003553,0.000351453689 L299.986401,0.00304980809 Z" id="路径" fill="#DADBE3" filter="url(#filter-1)"></path>
+                <path d="M94.0139542,-0.0026983544 C117.468536,23.1986311 132,55.4023129 132,91 C132,95.3885515 131.779144,99.7255195 131.347942,104.000396 L4,104.000396 C1.790861,104.000396 0,102.209139 0,100 L0,4 C0,1.790861 1.790861,7.1067284e-15 4,7.1067284e-15 L94.0139542,-0.0026983544 Z" id="路径" fill="#EEFAFF" filter="url(#filter-2)"></path>
+                <path d="M124,91 C124,95.3928055 123.763964,99.7304818 123.303883,104.001038 L4,104.001038 C1.790861,104.001038 0,102.209139 0,100 L0,4 C0,1.790861 1.790861,4.05925293e-16 4,2.16840434e-19 L82.2254992,-0.0014929638 C107.803161,22.0053535 124,54.6111895 124,91 Z" id="路径" fill="url(#linearGradient-3)" filter="url(#filter-4)"></path>
+            </g>
+        </g>
+    </g>
+</svg>

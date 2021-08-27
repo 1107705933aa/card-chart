@@ -1,0 +1,423 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/animaltype.css}" />
+
+<div id="app" class="chain" ref="chainRef" v-show="hideControl.animalType">
+    <div class="head-time">
+        <div class="block" size="mini">
+            <el-date-picker v-model="timeData" type="daterange" range-separator="至" start-placeholder="开始日期"
+                end-placeholder="结束日期" @blur="changeData">
+            </el-date-picker>
+        </div>
+    </div>
+    <div class="chain-cont">
+        <div class="loop" ref="loopRef">
+            <Chartoossp v-if="loopUpdata" class="chart" :id="'chartLoop'" ref="diyici"
+                :field="{ x: 'animalkind', y: 'positivenum', legend: 'animalkind' }" :chardata="loopData"
+                @loopchange="loopchange" />
+        </div>
+        <div class="census" v-show="polymerizeTitle">
+            <p class="title">{{ polymerizeTitle }}</p>
+            <Pdolymerizean class="chart" :id="'chartPolymerize'" :chardata2="polymerizeData" />
+        </div>
+    </div>
+</div>
+
+<template id="tgdv">
+    <div :id="id"></div>
+</template>
+
+<template id="tmplw2">
+    <div :id="id"></div>
+</template>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+    var urlValue = getRequestParam(document.URL);
+    if (urlValue.type == undefined) {
+        urlValue.type = "";
+    }
+    var mtlType = getRequestParam(document.URL);
+
+    Vue.component('Chartoossp', {
+        template: '#tgdv',
+        props: {
+            id: {
+                type: String,
+                default: "",
+            },
+            chardata: {
+                type: Array,
+                default: () => ([{
+                    positivenum: "",
+                    animalkind: "",
+                }]),
+            },
+
+            field: {
+                type: Object,
+                default: () => ({
+                    x: "",
+                    y: "",
+                    legend: "",
+                }),
+            },
+        },
+        data: {
+            chart: null,
+        },
+        // created() {
+        //     var _this = this
+        //     this.$nextTick(() => {
+        //         _this.drawChart();
+        //     })
+
+        // },
+        // mounted() {
+        //     this.drawChart();
+        // },
+        methods: {
+            // 绘图
+            drawChart() {
+                const self = this;
+                self.chart = new G2.Chart({
+                    container: self.id,
+                    autoFit: true,
+                    padding: [30, 20, 20, 20]
+                });
+
+                self.chart.coordinate("theta", {
+                    radius: 0.75,
+                    innerRadius: 0.6,
+                });
+
+                self.chart.data(self.chardata);
+
+                let loopTotal = 0;
+                self.chardata.forEach((item) => {
+                    loopTotal += item[self.field.y];
+                })
+                self.chart.scale(self.field.y, {
+                    formatter: (value) => {
+                        return `${((value / loopTotal) * 100).toFixed(2)}%`;
+                    },
+                });
+
+                self.chart.tooltip({
+                    showTitle: false,
+                    showMarkers: false,
+                    itemTpl:
+                        '<li class="g2-tooltip-list-item"><span style="background-color:{color};" class="g2-tooltip-marker"></span>{name}: {value}</li>',
+                });
+
+                self.chart
+                    .interval()
+                    .position(self.field.y)
+                    .color(self.field.x)
+                    .label(self.field.y, (value) => {
+                        return {
+                            // offset: -5,
+                            style: {
+                                fill: "#000",
+                            },
+                            content: (data) => {
+                                return `${data[self.field.x]} `;
+                            },
+                        }
+                    })
+                    .adjust("stack");
+
+                self.chart.legend({
+                    position: "left", // 图例的显示位置，有 'top','left','right','bottom'四种位置，默认是'right'
+                    itemName: {
+                        style: {
+                            // fill: "#98B4E3",
+                            fill: "#000",
+                            left: 30
+                            // fillOpacity: 0.65,
+                        },
+                    },
+                });
+
+                self.chart.interaction("element-active");
+
+                self.chart.render();
+                self.chart.on("click", (ev) => {
+                    const dataSon = ev.data;
+                    if (dataSon) {
+                        self.$emit("loopchange", dataSon.data);
+                    }
+                });
+            },
+            // 更新图表
+            changeChart() {
+                if (this.chart) {
+                    this.chart.destroy();
+                }
+                this.drawChart();
+            }
+        },
+    })
+    Vue.component('Pdolymerizean', {
+        template: '#tmplw2',
+        props: {
+            id: {
+                type: String,
+                default: "",
+            },
+            chardata2: {
+                type: Array,
+                default: function () {
+                    return {
+                        data: [],
+                    };
+                },
+            },
+
+        },
+        data: {
+            chart: null,
+        },
+        // 监听API接口传过来的数据 使用watch
+        watch: {
+            chardata2: {
+                handler(newVal, oldVal) {
+                    this.$nextTick(() => {
+                        if (this.chart){
+                            this.chart.destroy();
+                        }
+                        this.drawChart();
+                    });
+                },
+                immediate: true,
+                deep: true,
+            },
+        },
+        mounted() {
+            this.drawChart();
+        },
+        methods: {
+            // 绘图
+            drawChart() {
+                const self = this;
+                self.chart = new G2.Chart({
+                    container: self.id,
+                    autoFit: true,
+                });
+
+                self.chart.coordinate().transpose();
+
+                self.chart.data(self.chardata2);
+                self.chart.scale("positiveNum", {
+                    nice: true,
+                });
+                self.chart.tooltip({
+                    showMarkers: false,
+                    shared: true,
+                });
+
+                self.chart
+                    .interval()
+                    .position("animalkind*positiveNum")
+                    .color({
+                        fields: ["disease"],
+                        values: ["#23B899", "#4CE3C3", "#8BF7E0"],
+                    })
+                    .adjust("stack");
+
+                // x轴配置
+                self.chart.axis("animalkind", {
+                    tickLine: {
+                        alignTick: false,
+                    },
+                    label: {
+                        style: {
+                            fill: "#000",
+                            fillOpacity: 0.55
+                        },
+                    },
+                });
+                // y轴配置
+                self.chart.axis("positiveNum", {
+                    line: {
+                        style: {
+                            lineWidth: 1, // 设置线的宽度
+                            stroke: "#DBDEEB",
+                        },
+                    },
+                    label: {
+                        style: {
+                            fill: "#000",
+                            fillOpacity: 0.55
+                        },
+                    },
+                });
+                // 图表图例配置
+                self.chart.legend(false);
+                self.chart.interaction("active-region");
+                self.chart.render();
+            },
+        },
+    })
+    const app = new Vue({
+        el: "#app",
+        data: {
+            timeData: [],
+            hideControl: {
+                category: true,
+                chain: true,
+                areaMorbidity: true,
+                incidence: true,
+                animalType: true,
+            },
+            loopData: [],
+            loopUpdata: true,
+            polymerizeTitle: "",
+            polymerizeData: [],
+            totalData: [],
+        },
+        // 实例被挂载后调用
+        created: function () {
+            this.defaultDate();
+            this.getData();
+        },
+        mounted: function () { },
+        // 在 `methods` 对象中定义方法
+        methods: {
+            //设置默认日期
+            defaultDate() {
+                var pre = new Date();
+                pre.setFullYear(pre.getFullYear() - 1);
+                var now = new Date();
+                this.timeData = [new Date(pre), new Date(now)];
+            },
+            changeData() {
+                this.getData();
+            },
+            getData() {
+                var this_ = this;
+                var formData = new FormData();
+                if (this_.timeData[0]) {
+                    formData.append("beginDate", this_.timeData[0]);
+                }
+                if (this_.timeData[1]) {
+                    formData.append("endDate", this_.timeData[1]);
+                }
+                axios.post(parent.IFM_CONTEXT + '/first/busicommon/taskstatisticadc/queries/' + urlValue.type, formData).then(function (res) {
+                    // parent.Gikam.postSync(parent.IFM_CONTEXT + '/first/busicommon/taskstatisticadc/queries/' + urlValue.type, parent.Gikam.getJsonWrapper({
+                    //     type: mtlType.type
+                    // })).done(function (res) {
+                    // var data = res.map(item => ({
+                    //     category: item.category,
+                    //     subclass: item.subclass,
+                    //     testName: item.testName,
+                    //     value: item.value,
+                    // }));
+                    var data = res.data.map(item => ({
+                        category: item.category,
+                        subclass: item.subclass,
+                        testName: item.testName,
+                        value: item.value,
+                    }));
+                    var vueData = [];
+                    var categoryArr = [];
+                    var loopDataArr = [];
+                    var aaArr = [];
+                    var total = 0;
+                    if (data.length == 0) return;
+                    data.map(function (item) {
+                        if (categoryArr.indexOf(item.category) == -1) {
+                            categoryArr.push(item.category);
+                        }
+                        total += item.value;
+                    });
+                    for (var i = 0; i < categoryArr.length; i++) {
+                        var loopData = {
+                            positivenum: 0,
+                            animalkind: categoryArr[i]
+                        };
+                        loopDataArr.push(loopData);
+                    }
+                    for (var i = 0; i < loopDataArr.length; i++) {
+                        var polymerizeDataArr = [];
+                        data.map(function (item) {
+                            if (item.category == loopDataArr[i].animalkind) {
+                                loopDataArr[i].positivenum += item.value;
+                                var polymerizeData = {
+                                    animalkind: item.subclass,
+                                    disease: item.testName,
+                                    positiveNum: item.value
+                                };
+                                polymerizeDataArr.push(polymerizeData);
+                            }
+                        });
+                        var aaInfo = {
+                            polymerizeTitle: loopDataArr[i].animalkind,
+                            polymerizeData: polymerizeDataArr
+                        };
+                        aaArr.push(aaInfo);
+                    }
+                    loopDataArr.map(function (item) {
+                        item.positivenum = Math.floor(item.positivenum / total * 100);
+                    });
+                    this_.loopData = JSON.parse(JSON.stringify(loopDataArr));
+                    this_.totalData = aaArr;
+                    var count = -1;
+                    var totalCount = this_.loopData.length - 1;
+                    var typeObj = "";
+
+                    if (mtlType.chartType == "multi") {
+                        setInterval(function () {
+                            count += 1;
+                            typeObj = this_.loopData[count];
+                            this_.loopchange(typeObj)
+                            if (count === totalCount) {
+                                count = -1
+                            }
+                        }, 3000);
+                    }
+                    if (this_.$refs.diyici.chart) {
+                        this_.$refs.diyici.chart.destroy();
+                    }
+                    setTimeout(function () {
+                        this_.$refs.diyici.drawChart();
+                    }, 500);
+                });
+            },
+            // 动物类型发病数统计条形图
+            loopchange(obj) {
+                if (mtlType.chartType == "multi") {
+                    const self = this;
+                    if (!self.polymerizeTitle) {
+                        self.$refs.chainRef.style.height = "45.83%";
+                        self.$refs.loopRef.style.width = "100%";
+                        self.loopUpdata = false;
+                        setTimeout(() => {
+                            self.loopUpdata = true;
+                        }, 500);
+                    }
+
+                    self.polymerizeTitle = obj.animalkind;
+                    self.totalData.map(function (item) {
+                        if (item.polymerizeTitle == self.polymerizeTitle) {
+                            self.polymerizeData = item.polymerizeData;
+                        }
+                    });
+
+                    for (var i = 0; i < self.totalData; i++) {
+                        if (self.totalData[i].polymerizeTitle === obj.animalkind) {
+                            self.polymerizeData = self.totalData[i].polymerizeData;
+                        }
+                    }
+                }
+            },
+        }
+    });
+
+</script>

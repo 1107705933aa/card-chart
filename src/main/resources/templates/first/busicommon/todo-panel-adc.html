@@ -1,0 +1,159 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/handle.css}" />
+
+<div id="app" class="baifenbai">
+  <!-- 待办事项 -->
+  <el-row class="handle-content card-interval baifenbai">
+    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="baifenbai">
+      <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="baifenbai">
+        <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="card-head" v-if='false'>
+          <div class="card-title">
+            <!-- <img src="../static/first/busicommon/img/rectangle.svg" alt="" />待办事项 -->
+          </div>
+          <div class="card-more">
+            <img th:src="@{/static/first/busicommon/img/choose.svg}" alt="" />
+            <el-popover placement="right" width="292" trigger="click">
+              <div>
+                <div class="popup-content">
+                  <div class="find-title">阳性位置查询条件:</div>
+                  <el-form ref="form" :model="sizeForm" label-width="80px" size="mini">
+                    <el-form-item label="检测时间段:">
+                      <el-date-picker v-model="sizeForm.date1" type="daterange" range-separator="至"
+                        start-placeholder="开始日期" end-placeholder="结束日期">
+                      </el-date-picker>
+                    </el-form-item>
+                    <el-form-item label="动物种类:">
+                      <el-checkbox-group v-model="sizeForm.type">
+                        <el-checkbox label="猪" name="type"></el-checkbox>
+                        <el-checkbox label="鸡" name="type"></el-checkbox>
+                        <el-checkbox label="鸭" name="type"></el-checkbox>
+                        <el-checkbox label="鹅" name="type"></el-checkbox>
+                      </el-checkbox-group>
+                    </el-form-item>
+
+                    <el-form-item label="检测项目:">
+                      <el-checkbox-group v-model="sizeForm.type2">
+                        <el-checkbox label="检测项目1" name="type"></el-checkbox>
+                        <el-checkbox label="检测项目2" name="type"></el-checkbox>
+                      </el-checkbox-group>
+                    </el-form-item>
+                    <el-form-item label="病种等级:">
+                      <el-checkbox-group v-model="sizeForm.type3">
+                        <el-checkbox label="病种等级1" name="type"></el-checkbox>
+                        <el-checkbox label="病种等级2" name="type"></el-checkbox>
+                      </el-checkbox-group>
+                    </el-form-item>
+                    <el-form-item size="large">
+                      <el-button type="primary" @click="onSubmit" size="mini">确定</el-button>
+                      <el-button size="mini">取消</el-button>
+                    </el-form-item>
+                  </el-form>
+                </div>
+              </div>
+              <el-button class="shaixuan" slot="reference">筛选</el-button>
+            </el-popover>
+          </div>
+        </el-col>
+        <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="baifenbai">
+          <el-row class="table-head">
+            <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8">模块</el-col>
+            <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8">名称</el-col>
+            <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8">日期</el-col>
+          </el-row>
+          <div class="table-scroll" style="width:100%;height:calc(100% - 42px);">
+            <el-row class="table-content" v-for="(item, index) in handleData" :key="index">
+              <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8" @click="openMenu(item.menuId)"
+                style="color:#0078FF;text-decoration:underline;font-weight:700;cursor: pointer;">
+                <span>{{item.modular}}</span>
+              </el-col>
+              <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8">{{
+                item.name
+                }}</el-col>
+              <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8">{{
+                item.date
+                }}</el-col>
+            </el-row>
+          </div>
+        </el-col>
+      </el-col>
+    </el-col>
+  </el-row>
+</div>
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      // 待办事项
+      handleData: [
+        // {
+        //   modular: "仪器校准",
+        //   name: "523批次结果复核",
+        //   date: "2020-11-05",
+        // },
+        // {
+        //   modular: "仪器校准",
+        //   name: "报告2020-WTO01复核",
+        //   date: "2020-11-06",
+        // },
+        // {
+        //   modular: "试剂到期",
+        //   name: "委托单2020-WTO02审核",
+        //   date: "2020-11-07",
+        // },
+        // {
+        //   modular: "试剂到期",
+        //   name: "x试剂盒领用申请",
+        //   date: "2020-11-08",
+        // },
+      ],
+
+      // 筛选
+      sizeForm: {
+        date1: "",
+        type: [],
+        type2: [],
+        type3: [],
+      },
+    },
+    // 实例被挂载后调用
+    created: function () {
+      this.getData();
+    },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      getData() {
+        var this_ = this;
+        parent.Gikam.post(parent.IFM_CONTEXT + '/first/busicommon/todo/queries/' + urlValue.type).done(function (data) {
+          var vueData = [];
+          if (data.length == 0) return;
+          for (var i = 0; i < data.length; i++) {
+            var tem = {};
+            tem.modular = data[i].modularName;
+            tem.name = data[i].contentName;
+            tem.date = data[i].currentDate;
+            vueData.push(tem);
+          }
+          this_.handleData = vueData;
+        });
+      },
+      // 筛选
+      onSubmit() {
+      },
+      openMenu(id) {
+        parent.workspace.activeNodeById(id);
+      }
+    }
+  });
+</script>

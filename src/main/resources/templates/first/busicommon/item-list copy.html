@@ -1,0 +1,136 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/list.css}" />
+<div id="app">
+  <div class="head-time">
+    <div class="block" size="mini">
+      <el-select v-model="value" placeholder="请选择" @blur="changeData">
+        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+        </el-option>
+      </el-select>
+      <el-date-picker v-model="timeData" type="daterange" range-separator="至" start-placeholder="开始日期"
+        end-placeholder="结束日期" @blur="changeData">
+      </el-date-picker>
+    </div>
+  </div>
+  <!-- 待办事项2 -->
+  <el-row class="list-content">
+    <el-col :xs="12" :sm="8" :md="8" :lg="6" :xl="5" v-for="(item, index) in listData" :key="index"
+      style="padding:0 5px;">
+      <div class="list-panel" @click="openMenu(item.menuId)">
+        <el-row :gutter="10">
+          <el-col :xs="11" :sm="11" :md="11" :lg="11" :xl="11" class="verhicle-center">
+            <img class="list-icon" :src="item.icon" alt="" />
+          </el-col>
+          <el-col :xs="13" :sm="13" :md="13" :lg="13" :xl="13" class="verhicle-center">
+            <ul>
+              <li style="color: #76daff">{{ item.number }}</li>
+              <li :title="item.content">{{ item.name }}</li>
+            </ul>
+          </el-col>
+        </el-row>
+      </div>
+    </el-col>
+  </el-row>
+</div>
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      timeData: [],
+      // 待办事项 
+      listData: [],
+      options: [{
+        value: 'all',
+        label: '全部'
+      }, {
+        value: 'year',
+        label: '本年'
+      }, {
+        value: 'quarter',
+        label: '本季度'
+      }, {
+        value: 'month',
+        label: '本月'
+      }],
+      value: 'all'
+    },
+    // 实例被挂载后调用
+    created: function () {
+      this.defaultDate();
+      this.getData();
+    },
+    mounted: function () { this.getData(); },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      //设置默认日期
+      defaultDate() {
+        //获取新的时间(2019.4.12）
+        let date = new Date()
+        //获取当前时间的年份转为字符串
+        let year = date.getFullYear().toString()   //'2019'
+        //获取月份，由于月份从0开始，此处要加1，判断是否小于10，如果是在字符串前面拼接'0'
+        let month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1).toString() : (date.getMonth() + 1).toString()  //'04'
+        //获取天，判断是否小于10，如果是在字符串前面拼接'0'
+        let da = date.getDate() < 10 ? '0' + date.getDate().toString() : date.getDate().toString()  //'12'
+        //字符串拼接，开始时间，结束时间
+        let end = year + '-' + month + '-' + da  //当天'2019-04-12'
+        // let beg = year + '-' + month + '-01'    //当月第一天'2019-04-01'
+        let beg = year + '-' + '01' + '-01'    //当月第一天'2019-04-01'
+        this.timeData = [new Date(beg), new Date(end)] //将值设置给插件绑定的数据
+      },
+      changeData() {
+        this.getData();
+      },
+      getData() {
+        var this_ = this;
+        var formData = new FormData();
+        if (Boolean(urlValue.date) == true) {
+          if (this_.timeData[0]) {
+            formData.append("beginDate", this_.timeData[0]);
+          }
+          if (this_.timeData[1]) {
+            formData.append("endDate", this_.timeData[1]);
+          }
+        }
+        axios.post(parent.IFM_CONTEXT + '/first/busicommon/itemList/' + urlValue.type + '/' + this_.value, formData,).then(function (responsedata) {
+          var vueData = [];
+          var data = responsedata.data;
+          if (data.length == 0) return;
+          for (var i = 0; i < data.length; i++) {
+            var tem = {};
+            tem.menuId = data[i].menuId;
+            tem.name = data[i].itemName;
+            tem.number = data[i].itemValue;
+            tem.icon = parent.IFM_CONTEXT + data[i].icon;
+            vueData.push(tem);
+          }
+          this_.listData = vueData;
+        });
+      },
+      openMenu(id) {
+        parent.workspace.activeNodeById(id);
+      }
+    }
+  });
+  window.refresh = function () {
+    app.getData();
+  }
+</script>
+
+<style lang="scss" scoped>
+  .el-input__prefix,
+  .el-input__suffix {
+    top: 6px !important;
+  }
+</style>

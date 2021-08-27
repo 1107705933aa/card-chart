@@ -1,0 +1,209 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/list.css}" />
+<div id="app">
+  <!-- <div class="head-time">
+    <div class="block" size="mini">
+      <span v-if="urlValue.type=='lostWarning'">遗忘提醒</span>
+      <span v-if="urlValue.type=='customerChg'">客户关怀</span>
+      <el-date-picker v-model="timeData" type="daterange" range-separator="至" start-placeholder="开始日期"
+        end-placeholder="结束日期" @blur="changeData">
+      </el-date-picker>
+    </div>
+  </div> -->
+  <!-- 指标卡片 -->
+  <el-row class="list-content">
+    <el-col :xs="12" :sm="8" :md="8" :lg="6" :xl="5" v-for="(item, index) in listData" :key="index"
+      style="padding:0 5px;">
+      <div class="list-panel" @click="openMenu(item.menuId)">
+        <el-row :gutter="10">
+          <!-- <el-col :xs="11" :sm="11" :md="11" :lg="11" :xl="11" class="verhicle-center">
+            <img class="list-icon" :src="item.icon" alt="" />
+          </el-col> -->
+          <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="verhicle-center">
+            <ul style="margin-left: 10px;">
+              <li :title="item.content">{{ item.name }}</li>
+              <li style="color: #76daff;">{{ item.number }}
+              </li>
+            </ul>
+          </el-col>
+        </el-row>
+      </div>
+    </el-col>
+  </el-row>
+</div>
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      // timeData: [],
+      // 待办事项
+      listData: []
+    },
+    // 实例被挂载后调用
+    created: function () {
+      // this.defaultDate();
+      this.getData();
+    },
+    mounted: function () { this.getData(); },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      //设置默认日期
+      // defaultDate() {
+      //   //获取新的时间(2019.4.12）
+      //   let date = new Date()
+      //   //获取当前时间的年份转为字符串
+      //   let year = date.getFullYear().toString()   //'2019'
+      //   //获取月份，由于月份从0开始，此处要加1，判断是否小于10，如果是在字符串前面拼接'0'
+      //   let month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1).toString() : (date.getMonth() + 1).toString()  //'04'
+      //   //获取天，判断是否小于10，如果是在字符串前面拼接'0'
+      //   let da = date.getDate() < 10 ? '0' + date.getDate().toString() : date.getDate().toString()  //'12'
+      //   //字符串拼接，开始时间，结束时间
+      //   let end = year + '-' + month + '-' + da  //当天'2019-04-12'
+      //   // let beg = year + '-' + month + '-01'    //当月第一天'2019-04-01'
+      //   let beg = year + '-' + '01' + '-01'    //当月第一天'2019-04-01'
+      //   this.timeData = [new Date(beg), new Date(end)] //将值设置给插件绑定的数据
+      // },
+      changeData() {
+        this.getData();
+      },
+      getData() {
+        var this_ = this;
+        // var formData = new FormData();
+        // if (Boolean(urlValue.date) == true) {
+        //   if (this_.timeData[0]) {
+        //     formData.append("beginDate", this_.timeData[0]);
+        //   }
+        //   if (this_.timeData[1]) {
+        //     formData.append("endDate", this_.timeData[1]);
+        //   }
+        // }
+        axios.post(parent.IFM_CONTEXT + '/first/busicommon/indexCard/queries/' + urlValue.type).then(function (responsedata) {
+          var vueData = [];
+          var data = responsedata.data;
+          if (data.length == 0) return;
+          for (var i = 0; i < data.length; i++) {
+            var tem = {};
+            tem.name = data[i].name;
+            tem.number = data[i].value;
+            vueData.push(tem);
+          }
+          this_.listData = vueData;
+        });
+      },
+      openMenu(id) {
+        parent.workspace.activeNodeById(id);
+      }
+    }
+  });
+  window.refresh = function () {
+    app.getData();
+  }
+</script>
+
+<style>
+  .list-content {
+    padding: 5px !important;
+    padding-top: 10px !important;
+    height: 100% !important;
+  }
+
+  .head-time {
+    height: 40px;
+    padding: 10px;
+    margin-bottom: 5px;
+    box-sizing: border-box;
+    border-bottom: 1px solid #F2F5F6;
+  }
+
+  .block {
+    float: left;
+
+  }
+
+  .content-area {
+    width: 100%;
+    height: calc(100% - 40px);
+  }
+
+  .el-input__inner {
+    width: 127px !important;
+  }
+
+  .el-range-separator {
+    font-size: 12px !important;
+  }
+
+  .el-input__inner {
+    height: 30px !important;
+    line-height: 30px !important;
+  }
+
+  .el-range__icon,
+  .el-range-separator {
+    line-height: 23px !important;
+  }
+
+  .el-date-editor .el-range-input,
+  .el-date-editor .el-range-separator {
+    font-size: 12px !important;
+  }
+
+  .el-date-editor .el-range-input {
+    width: 54% !important;
+  }
+
+  .el-date-editor .el-range__close-icon {
+    width: 0px !important;
+  }
+
+  /* 改日期大小 */
+  .el-picker-panel {
+    z-index: 2007;
+    top: 10px !important;
+    left: 0 !important;
+  }
+
+  .el-date-range-picker {
+    width: 420px !important;
+  }
+
+  .el-date-table {
+    font-size: 12px;
+  }
+
+  .el-date-table td {
+    padding: 0 !important;
+  }
+
+  .el-date-range-picker__header div {
+    font-size: 13px !important;
+  }
+
+  .el-date-range-picker .el-picker-panel__body {
+    min-width: 113px !important;
+  }
+
+  .el-date-table td,
+  .el-date-table td div {
+    height: 20px !important;
+  }
+
+  .el-popper[x-placement^=bottom] {
+    margin-top: -10px !important;
+  }
+
+  .el-date-range-picker__content {
+    padding: 7px 16px 16px !important;
+  }
+</style>

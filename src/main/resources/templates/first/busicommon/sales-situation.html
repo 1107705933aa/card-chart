@@ -1,0 +1,47 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/progress.css}" />
+
+<div id="app" style="width:100%;height:100%;">
+  <div class="titlee-content">
+    <!-- 市场销售情况 -->
+  </div>
+</div>
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+   
+    },
+    created: function () {
+      
+    },
+    // 实例被挂载后调用
+    mounted: function () { },
+    // 在 `methods` 对象中定义方法
+    methods: {
+   
+    }
+  });
+</script>
+
+<style lang="scss" scoped>
+.titlee-content {
+  width: 100%;
+  height: 100%;
+  font-size: 15px;
+  font-weight: 700;
+  padding-left: 5px;
+}
+</style>

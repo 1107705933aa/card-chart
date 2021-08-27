@@ -1,0 +1,297 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/ka1.css}" />
+
+<div id="app" style="width:100%;height:100%;">
+    <el-row class="baifenbai" style="padding:10px;">
+        <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="baifenbai">
+            <div style="width:100%;height:100%;" id="chartmain"></div>
+        </el-col>
+    </el-row>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+    var urlValue = getRequestParam(document.URL);
+    if (urlValue.type == undefined) {
+        urlValue.type = "";
+    }
+    const app = new Vue({
+        el: "#app",
+        data: {
+            // 甘特图
+            myChart: null,
+            ganteData: {
+                /* jihuaData: {
+                   end: [
+                       new Date("2020-05-01"),
+                       new Date("2020-03-14"),
+                       new Date("2020-05-01")
+                   ],
+                   start: [
+                       new Date("2020-01-01"),
+                       new Date("2020-01-01"),
+                       new Date("2020-03-15")
+                   ]
+               },
+               kexingData: {
+                   end: [
+                       new Date("2020-01-10"),
+                       new Date("2020-03-30"),
+                       new Date("2020-01-10")
+                   ],
+                   start: [
+                       new Date("2020-01-02"),
+                       new Date("2020-03-16"),
+                       new Date("2020-01-02")
+                   ]
+               },
+               chubuData: {
+                   end: [
+                       new Date("2020-02-20"),
+                       new Date("2020-01-20"),
+                       new Date("2020-04-10")
+                   ],
+                   start: [
+                       new Date("2020-02-01"),
+                       new Date("2020-01-12"),
+                       new Date("2020-04-01")
+                   ]
+               },
+               shigongData: {
+                   end: [
+                       new Date("2020-03-09"),
+                       new Date("2020-01-25"),
+                       new Date("2020-04-20")
+                   ],
+                   start: [
+                       new Date("2020-02-25"),
+                       new Date("2020-01-21"),
+                       new Date("2020-04-11")
+                   ]
+               },
+               xiangmuData: {
+                   end: [
+                       new Date("2020-03-12"),
+                       new Date("2020-02-15"),
+                       new Date("2020-04-30")
+                   ],
+                   start: [
+                       new Date("2020-03-10"),
+                       new Date("2020-01-26"),
+                       new Date("2020-04-21")
+                   ]
+               },
+               yanshouData: {
+                   end: [
+                       new Date("2020-03-30"),
+                       new Date("2020-03-13"),
+                       new Date("2020-05-01")
+                   ],
+                   start: [
+                       new Date("2020-03-15"),
+                       new Date("2020-02-16"),
+                       new Date("2020-04-30")
+                   ]
+               }  */
+            }
+        },
+        // 实例被挂载后调用
+        created: function () {
+            this.getData()
+        },
+        // 在 `methods` 对象中定义方法
+        methods: {
+            getData() {
+                var corlorArr = ["skyblue", "green", "red", "brown", "yellow", "orange", "Aqua", "Aquamarine", "Blue", "Coral", "DeepPink", "OrangeRed"];
+                var this_ = this;
+                var equipnameArr = [];
+                var stepArr = [];
+                var seriesArr = [];
+                var axis;
+                parent.Gikam.post(parent.IFM_CONTEXT + '/first/busicommon/equipmentschedule/queries/' + urlValue.type).done(function (data) {
+                    if (data.length == 0) return;
+                    data.map(function (item) {
+                        if (equipnameArr.indexOf(item.equipname) == -1) {
+                            equipnameArr.push(item.equipname);
+                        }
+                        if (stepArr.indexOf(item.step) == -1) {
+                            stepArr.push(item.step);
+                        }
+                    });
+                    for (var i = 0; i < stepArr.length; i++) {
+                        var startDateArr = [];
+                        var endDateArr = [];
+                        data.map(function (item) {
+                            if (item.step == stepArr[i]) {
+                                axis = item.startDate;
+                                startDateArr.push(new Date(item.startDate));
+                                endDateArr.push(new Date(item.endDate));
+                            }
+                        });
+                        var time = {
+                            start: startDateArr,
+                            end: endDateArr
+                        }
+                        var stepname = 'step' + i;
+                        this_.ganteData[stepname] = time;
+                        var sArr = [
+                            {
+                                name: stepArr[i],
+                                type: "bar",
+                                stack: "总量" + i,
+                                label: {
+                                    normal: {
+                                        show: true,
+                                        color: "#000",
+                                        position: "right",
+
+                                    }
+                                },
+                                itemStyle: {
+                                    normal: {
+                                        color: corlorArr[i],
+                                        borderColor: "#fff",
+                                        borderWidth: 2
+                                    }
+                                },
+                                zlevel: -1,
+                                data: endDateArr
+                            },
+                            {
+                                name: stepArr[i],
+                                type: "bar",
+                                stack: "总量" + i,
+                                itemStyle: {
+                                    normal: {
+                                        color: "white",
+                                    }
+                                },
+                                zlevel: -1,
+                                z: 3,
+                                data: startDateArr
+                            }
+                        ];
+                        Array.prototype.push.apply(seriesArr, sArr);
+                    }
+                }).done(function () {
+                    this_.$nextTick(() => {
+                        this_.drawGatt(stepArr, equipnameArr, seriesArr, axis);
+                    });
+                });
+            },
+            // 甘特图
+            drawGatt(stepArr, equipnameArr, seriesArr, axis) {
+                var _this = this
+                //指定图表的配置项和数据
+                var option = {
+                    backgroundColor: "#fff",
+                    legend: {
+                        data: stepArr,
+                        left: 0,
+                        top: 10
+                    },
+                    grid: {
+                        containLabel: true,
+                        show: false,
+                        right: 20,
+                        left: 0,
+                        bottom: 40,
+                        top: 90
+                    },
+                    xAxis: {
+                        type: "time",
+                        axisLabel: {
+                            "show": true,
+                            "interval": 0
+                        },
+                        axisPointer: {
+                            value: axis,
+                            snap: true,
+                            lineStyle: {
+                                color: '#004E52',
+                                opacity: 0.5,
+                                width: 2
+                            },
+                            label: {
+                                show: true,
+                                formatter: function (params) {
+                                    return echarts.format.formatTime('yyyy-MM-dd', params.value);
+                                },
+                                backgroundColor: '#004E52'
+                            },
+                            handle: {
+                                show: true,
+                                color: '#004E52'
+                            }
+                        },
+                    },
+                    yAxis: {
+                        axisLabel: {
+                            show: true,
+                            interval: 0,
+                            formatter: function (value, index) {
+                                var last = ""
+                                var max = 5;
+                                var len = value.length;
+                                var hang = Math.ceil(len / max);
+                                if (hang > 1) {
+                                    for (var i = 0; i < hang; i++) {
+                                        var start = i * max;
+                                        var end = start + max;
+                                        var temp = value.substring(start, end) + "\n";
+                                        last += temp; //凭借最终的字符串
+                                    }
+                                    return last;
+                                } else {
+                                    return value;
+                                }
+                            }
+                        },
+                        data: equipnameArr
+                    },
+                    tooltip: {
+                        trigger: "axis",
+                        formatter: function (params) {
+                            var res = "";
+                            var name = "";
+                            var start0 = "";
+                            var start = "";
+                            var end0 = "";
+                            var end = "";
+                            for (var i in params) {
+                                var k = i % 2;
+                                if (!k) { //偶数
+                                    start0 = params[i].data;
+                                    start = start0.getFullYear() + "-" + (start0.getMonth() + 1) + "-" + start0.getDate();
+                                }
+                                if (k) { //奇数
+                                    name = params[i].seriesName;
+                                    end0 = params[i].data;
+                                    end = end0.getFullYear() + "-" + (end0.getMonth() + 1) + "-" + end0.getDate();
+                                    res += name + " : " + end + "~" + start + "</br>";
+                                }
+                            }
+                            return res;
+                        }
+                    },
+                    series: seriesArr
+                }
+                //获取dom容器
+                var myChart = echarts.init(document.getElementById('chartmain'));
+                // 使用刚指定的配置项和数据显示图表。
+                myChart.setOption(option);
+
+                window.onresize = () => {
+                    // 基于准备好的dom，初始化echarts实例
+                    myChart.resize();
+                };
+            },
+        }
+    });
+</script>

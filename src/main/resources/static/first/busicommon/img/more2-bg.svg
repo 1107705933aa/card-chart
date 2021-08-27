@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="92px" height="80px" viewBox="0 0 92 80" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>更多底块</title>
+    <defs>
+        <path d="M35.903882,38 L89.596118,38 C92.3575417,38 94.596118,40.2385763 94.596118,43 C94.596118,43.408809 94.5459812,43.8160751 94.4468305,44.2126781 L80.9468305,98.2126781 C80.3903717,100.438513 78.3904562,102 76.096118,102 L22.403882,102 C19.6424583,102 17.403882,99.7614237 17.403882,97 C17.403882,96.591191 17.4540188,96.1839249 17.5531695,95.7873219 L31.0531695,41.7873219 C31.6096283,39.5614869 33.6095438,38 35.903882,38 Z" id="path-1"></path>
+        <filter x="-15.7%" y="-15.6%" width="131.5%" height="143.8%" filterUnits="objectBoundingBox" id="filter-2">
+            <feOffset dx="0" dy="4" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="4" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.61344417   0 0 0 0 0.68155283   0 0 0 0 0.934527853  0 0 0 0.197934878 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="动物疾病监测控制" transform="translate(-10.000000, -34.000000)">
+            <g id="更多底块" transform="translate(56.000000, 70.000000) scale(-1, 1) translate(-56.000000, -70.000000) ">
+                <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-1"></use>
+            </g>
+        </g>
+    </g>
+</svg>

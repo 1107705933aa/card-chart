@@ -1,0 +1,135 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+ul,
+li {
+  list-style: none;
+  text-decoration: none;
+}
+
+.baifenbai {
+  width: 100%;
+  height: 100%;
+}
+
+.chart-content {
+  width: 100%;
+  height: calc(100% - 35px);
+  padding: 0 5px 5px;
+}
+
+.chart-content2 {
+  width: 100%;
+  height: 100%;
+  padding: 0 5px 5px;
+}
+
+.head-time {
+  height: 35px;
+  /* margin-top: 5px; */
+  margin-right: 5px;
+}
+
+.block {
+  float: right;
+}
+
+.el-input__inner {
+  width: 127px !important;
+}
+
+.el-range-separator {
+  font-size: 12px !important;
+}
+
+.el-input__inner {
+  height: 30px !important;
+  line-height: 30px !important;
+}
+.el-range__icon,
+.el-range-separator {
+  line-height: 23px !important;
+}
+
+.el-date-editor .el-range-input,
+.el-date-editor .el-range-separator {
+  font-size: 12px !important;
+}
+
+.el-date-editor .el-range-input {
+  width: 54% !important;
+}
+
+.el-date-editor .el-range__close-icon {
+  width: 0px !important;
+  margin-right: 6px !important;
+  margin-bottom: 10px !important;
+}
+
+/* 改日期大小 */
+.el-picker-panel {
+  z-index: 2007;
+  top: 28px !important;
+  height: 70%;
+  overflow-y: scroll;
+  /* top: 10px !important;
+  left: 0 !important; */
+}
+
+.el-picker-panel::-webkit-scrollbar {
+  display: none; /* Chrome Safari */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.el-date-range-picker {
+  width: 420px !important;
+}
+
+.el-date-table {
+  font-size: 12px;
+}
+
+.el-date-table td {
+  padding: 0 !important;
+}
+
+.el-date-range-picker__header div {
+  font-size: 13px !important;
+}
+
+.el-date-range-picker .el-picker-panel__body {
+  min-width: 113px !important;
+}
+
+.el-date-table td,
+.el-date-table td div {
+  height: 20px !important;
+}
+
+.el-popper[x-placement^="bottom"] {
+  /* margin-top: -10px !important; */
+}
+
+.el-date-range-picker__content {
+  padding: 7px 16px 16px !important;
+}
+
+.el-select-dropdown__wrap {
+  /* padding-top: 36px !important; */
+}
+
+.el-select-dropdown {
+  top: 30px !important;
+}
+
+.el-input__icon {
+  line-height: 29px !important;
+}
+
+.el-date-editor.el-input, .el-date-editor.el-input__inner {
+  width: 130px !important;
+}

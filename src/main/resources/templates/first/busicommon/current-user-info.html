@@ -1,0 +1,82 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/hello.css}" />
+
+<div id="app" v-for="customData">
+  <!-- 下午好 -->
+  <el-row class="hello-content card-interval">
+    <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8" class="hello-aside">
+      <div class="aside-img">
+        <!-- <img src="./img/phoneline.svg" alt="" /> -->
+        <img class="aside-code" th:src="@{/static/first/busicommon/img/code.png}" alt="" />
+        <span>扫码打开APP</span>
+      </div>
+    </el-col>
+    <el-col :xs="11" :sm="11" :md="11" :lg="11" :xl="11">
+      <div class="hello-header">
+        <span>{{customData.userName}} 您好!</span>
+        <span>{{customData.currentDate}}</span>
+      </div>
+      <div class="hello-main">
+        <span>欢迎使用实验室管理系统</span>
+        <span>{{customData.orgName}}</span>
+      </div>
+      <div class="hello-footer">
+        <span>上次登录时间：{{customData.lastLoginTime}}</span>
+      </div>
+    </el-col>
+    <!-- <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5" class="hello-head">
+        <img src="/static/first/busicommon/img/head.png" alt="" />
+      </el-col> -->
+  </el-row>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      // 下午好
+      customData: {
+        /* username:'Taurus Kuang 下午好！',
+        currentDate:'2020年11月18日',
+        orgName:'设备管理员',
+        lastLoginTime:'2020年11月8日', */
+      },
+    },
+    // 实例被挂载后调用
+    mounted: function () { },
+    created: function () {
+      this.getData();
+    },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      getData() {
+        var now = new Date();
+        var year = now.getFullYear(); //得到年份
+        var month = now.getMonth() + 1;//得到月份
+        var date = now.getDate();//得到日期
+        var day = now.getDay();//得到周几
+        var time = year + "年" + month + "月" + date + "日";
+        var this_ = this;
+        this_.customData.userName = parent.Gikam.loginUser.userName;
+        this_.customData.orgName = parent.Gikam.loginUser.orgName;
+        this_.customData.currentDate = time;
+        parent.Gikam.postSync(parent.IFM_CONTEXT + '/first/busicommon/lastLoginTime/queries/' + urlValue.type).done(function (data) {
+          this_.customData.lastLoginTime = data.lastLoginTime;
+        });
+      },
+    }
+  });
+</script>

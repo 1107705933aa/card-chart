@@ -1,0 +1,254 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<style scoped>
+  .el-select-dropdown {
+    height: 80% !important;
+  }
+</style>
+<div id="app">
+  <!-- 饼图 -->
+  <!-- <div class="head-time" v-if="showDate">
+    <div class="block" size="mini">
+      <el-date-picker v-model="timeData" type="daterange" range-separator="至" start-placeholder="开始日期"
+        end-placeholder="结束日期" @blur="changeData">
+      </el-date-picker>
+    </div>
+  </div> -->
+  <div class="head-time" v-if="showDate">
+    <div class="block" size="mini">
+      <el-select size="mini" v-model="typeValue" placeholder="请选择" @blur="changeData">
+        <el-option v-for="item in typeOptions" :key="item.value" :label="item.label" :value="item.value">
+        </el-option>
+      </el-select>
+      <!-- <el-select size="mini" v-model="timeValue" placeholder="请选择" @blur="changeData">
+        <el-option style="float:right;" v-for="item in timeOptions" :key="item.value" :label="item.label"
+          :value="item.value">
+        </el-option>
+      </el-select> -->
+      <el-date-picker :picker-options="pickerOptions" v-model="timeValue" type="month" placeholder="选择月"
+        @blur="changeData" size="mini">
+      </el-date-picker>
+    </div>
+  </div>
+  <el-row :class="showDate?'chart-content':'chart-content2'">
+    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="baifenbai">
+      <div id="columnar" class="baifenbai"></div>
+    </el-col>
+  </el-row>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      chart: null,
+      timeData: ['', ''],
+      bingData: [],
+      showDate: true,
+      timeType: "month",
+      typeValue: "化工检验所",
+      typeOptions: [],
+      timeValue: new Date(),
+      pickerOptions: {
+        disabledDate(time) {
+          let minYear = new Date().getFullYear() - 2
+          return time > Date.now() || time.getTime() < new Date(JSON.stringify(minYear))
+        }
+      },
+    },
+    created: function () {
+      // if (urlValue.date != null && urlValue.date != undefined && urlValue.date != "") {
+      //   this.showDate = urlValue.date;
+      //   // this.showDate = urlValue.date;
+      // }
+      // 设置时间选择框内容
+      // this.timeFilter(this.timeType);
+      // this.defaultDate();
+      this.getData();
+      // 获取食品接口
+      this.getTypeOptions();
+    },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      //设置默认日期
+      // defaultDate() {
+      //   var pre = new Date();
+      //   pre.setFullYear(pre.getFullYear() - 1);
+      //   var now = new Date();
+      //   this.timeData = [new Date(pre), new Date(now)];
+      // },
+      // 设置时间选择框内容
+      timeFilter(type) {
+        const self = this;
+        const options = [];
+        const newTime = new Date;
+        if (type === "year") {
+          const year = newTime.getFullYear();
+          self.timeValue = year;
+          for (let i = 0; i < 3; i++) {
+            options.push({
+              value: year - i,
+              label: year - i
+            })
+          }
+        }
+        if (type === "month") {
+          const year = newTime.getFullYear();
+          const month = newTime.getMonth() + 1;
+          self.timeValue = `${year}/${month > 9 ? month : "0" + month}`;
+          for (let y = 0; y < 3; y++) {
+            for (let i = 1; i <= 12; i++) {
+              options.push({
+                value: `${year - y}/${i > 9 ? i : "0" + i}`,
+                label: `${year - y}/${i > 9 ? i : "0" + i}`
+              })
+            }
+          }
+          options.reverse();
+        }
+        self.timeOptions = options;
+      },
+      changeData() {
+        if (this.chart){
+          this.chart.destroy();
+        }
+        this.getData();
+      },
+      // 获取类别接口
+      getTypeOptions() {
+        const self = this;
+        axios.get(parent.IFM_CONTEXT + `/secure/core/module/mdm/orgs/queries/selectable`, { params: { ORGPROPERTY_SEQ: 'inspectionDepartment' } })
+          .then(function ({ data }) {
+            self.typeOptions = data.map(x => ({
+              value: x.orgName,
+              label: x.orgName
+            }))
+          })
+      },
+      // 获取数据
+      getData() {
+        // var this_ = this;
+        // var formData = new FormData();
+        // if (Boolean(urlValue.date) == true) {
+        //   if (this_.timeData[0]) {
+        //     formData.append("beginDate", this_.timeData[0]);
+        //   }
+        //   if (this_.timeData[1]) {
+        //     formData.append("endDate", this_.timeData[1]);
+        //   }
+        // }
+
+        const this_ = this;
+        const formData = new FormData();
+        if (this_.timeValue != "" && this_.timeValue != null && this_.timeValue != undefined) {
+          let year = this_.timeValue.getFullYear();
+          let month = this_.timeValue.getMonth() + 1;
+          let timeValue = `${year}/${month > 9 ? month : "0" + month}`;
+          if (this_.timeType && this_.timeValue) {
+            formData.append(this_.timeType, timeValue);
+          }
+        }
+        axios.post(parent.IFM_CONTEXT + `/first/busicommon/inspectionstatistic/queries/${this_.typeValue}`, formData).then(function (data) {
+          // axios.post(parent.IFM_CONTEXT + '/first/busicommon/pieChartadc/queries/' + urlValue.type, formData).then(function (data) {
+          this.bingData = data.data.map(e => ({
+            item: e.category,
+            count: e.value
+          }))
+          this_.drawColumnar();
+        })
+      },
+      // 饼图adc
+      drawColumnar() {
+        this.chart = new G2.Chart({
+          container: 'columnar',
+          autoFit: true,
+        });
+        this.chart.data(bingData);
+        let arrTotal = 0;
+        bingData.forEach(item => {
+          arrTotal += item.count;
+        })
+        this.chart.scale('count', {
+          formatter: (val) => {
+            return val;
+          },
+        });
+        this.chart.coordinate('theta', {
+          radius: 0.75,
+          innerRadius: 0.6,
+        });
+        this.chart.tooltip({
+          showTitle: false,
+          showMarkers: false,
+          itemTpl: '<li class="g2-tooltip-list-item"><span style="background-color:{color};" class="g2-tooltip-marker"></span>{name}: {value}</li>',
+        });
+        this.chart.legend({
+          position: "right",
+        });
+        this.chart
+          .interval()
+          .adjust('stack')
+          .position('count')
+          .color('item')
+          .label('count', (count) => {
+            return {
+              content: (data) => {
+                return `${count}`;
+              },
+            };
+          })
+          .tooltip('item*count', (item, count) => {
+            return {
+              name: item,
+              value: count,
+            };
+          });
+
+        // 辅助文本
+        this.chart
+          .annotation()
+          .text({
+            position: ['50%', '50%'],
+            content: '总计',
+            style: {
+              fontSize: 14,
+              fill: '#000',
+              textAlign: 'center',
+            },
+            offsetY: 20,
+          })
+          .text({
+            position: ['50%', '50%'],
+            content: arrTotal,
+            style: {
+              fontSize: 20,
+              fill: '#000',
+              textAlign: 'center',
+            },
+            offsetY: -15,
+          })
+
+        this.chart.interaction('element-active');
+
+        this.chart.render();
+      },
+    }
+  });
+</script>
+
+<!-- <style scoped>
+.el-select-dropdown__wrap {
+    padding-top: 36px !important;
+}
+</style> -->

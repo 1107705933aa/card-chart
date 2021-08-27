@@ -1,0 +1,115 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/lunbo.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/swiper.css}" />
+
+<div id="app" style="width:100%;height:100%;">
+    <el-row class="baifenbai" style="padding:10px;">
+        <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="baifenbai">
+            <div class="process">
+                <swiper class="process-cont" :options="processContOptions">
+                    <swiper-slide v-for="(item, idx) in processData" :key="idx" class="process-cont--item">
+                        <img class="process-image" :src="item.imageUrl" alt />
+                        <p class="process-name" :title="item.imageName">{{ item.imageName }}</p>
+                    </swiper-slide>
+                </swiper>
+            </div>
+        </el-col>
+    </el-row>
+
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/swiper.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/vue-awesome-swiper.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+    var urlValue = getRequestParam(document.URL);
+    if (urlValue.type == undefined) {
+        urlValue.type = "";
+    }
+    Vue.use(window.VueAwesomeSwiper)
+    const app = new Vue({
+        el: "#app",
+        data: {
+            processContOptions: {
+                slidesPerView: 3,
+                loop: true,
+                observer: true, // 修改swiper自己或子元素时，自动初始化swiper
+                observeParents: true, // 修改swiper的父元素时，自动初始化swiper
+                autoplay: {
+                    delay: 2000,
+                    disableOnInteraction: false,
+                },
+            },
+            processData: [
+                /* {
+                    imageName: "图形3",
+                    imageUrl:
+                        "https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=2763274110,3993624877&fm=26&gp=0.jpg",
+                },
+                {
+                    imageName: "图形4",
+                    imageUrl:
+                        "https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=1571968016,1585916327&fm=26&gp=0.jpg",
+                },
+                {
+                    imageName: "图形5",
+                    imageUrl:
+                        "https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3316307702,2217101271&fm=26&gp=0.jpg",
+                },
+                {
+                    imageName: "图形6",
+                    imageUrl:
+                        "https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=2260116821,4160156166&fm=26&gp=0.jpg",
+                },
+                {
+                    imageName: "图形7",
+                    imageUrl:
+                        "https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=359843624,4245628555&fm=26&gp=0.jpg",
+                },
+                {
+                    imageName: "图形8",
+                    imageUrl:
+                        "https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=2124942259,848747676&fm=26&gp=0.jpg",
+                },
+                {
+                    imageName: "图形9",
+                    imageUrl:
+                        "https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=3799837126,1194214475&fm=26&gp=0.jpg",
+                },
+                {
+                    imageName: "图形10",
+                    imageUrl:
+                        "https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=3904644935,268508794&fm=26&gp=0.jpg",
+                }, */
+            ],
+        },
+        // 实例被挂载后调用
+        created: function () {
+            this.getData()
+        },
+        // 在 `methods` 对象中定义方法
+        methods: {
+            getData() {
+                var this_ = this;
+                parent.Gikam.post(parent.IFM_CONTEXT + '/first/busicommon/rotationchart/queries/' + urlValue.type).done(function (data) {
+                    var vueData = [];
+                    if (data.length == 0) return;
+                    for (var i = 0; i < data.length; i++) {
+                        var tem = {};
+                        tem.imageName = data[i].imageName;
+                        tem.imageUrl = parent.IFM_CONTEXT + data[i].imageUrl;
+                        vueData.push(tem);
+                    }
+                    this_.processData = vueData;
+                });
+            },
+        }
+    });
+</script>

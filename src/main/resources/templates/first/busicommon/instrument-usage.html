@@ -1,0 +1,230 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<div id="app">
+  <!-- 柱状图 -->
+  <!-- <div class="head-time" v-if="showDate">
+    <div class="block" size="mini">
+      <el-date-picker v-model="timeData" type="daterange" range-separator="至" start-placeholder="开始日期"
+        end-placeholder="结束日期" @blur="changeData">
+      </el-date-picker>
+    </div>  
+  </div>  -->
+  <div class="head-time" v-if="showDate">
+    <div class="block" size="mini">
+      <el-select size="mini" v-model="typeValue" placeholder="请选择" @blur="changeData">
+        <el-option v-for="item in typeOptions" :key="item.value" :label="item.label" :value="item.value">
+        </el-option>
+      </el-select>
+      <el-date-picker :picker-options="pickerOptions" v-model="timeValue" type="month" placeholder="选择月"
+        @blur="changeData" size="mini">
+      </el-date-picker>
+    </div>
+  </div>
+  <el-row :class="showDate?'chart-content':'chart-content2'">
+    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="baifenbai">
+      <div id="columnar" class="baifenbai"></div>
+    </el-col>
+  </el-row>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      chart: null,
+      timeData: ['', ''],
+      // 人员当前工作量
+      workloadData: [],
+      showDate: true,
+      timeType: "month",
+      timeValue: new Date(),
+      pickerOptions: {
+        disabledDate(time) {
+          let minYear = new Date().getFullYear() - 2
+          return time > Date.now() || time.getTime() < new Date(JSON.stringify(minYear))
+        }
+      },
+      typeValue: "化工检验所",
+      typeOptions: [],
+    },
+    created: function () {
+      // if (urlValue.date != null && urlValue.date != undefined && urlValue.date != "") {
+      //   this.showDate = urlValue.date;
+      // }
+      // this.defaultDate();
+      // 设置时间选择框内容
+      // this.timeFilter(this.timeType)
+      this.getData();
+      this.getTypeOptions();
+    },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      // 设置时间选择框内容
+      timeFilter(type) {
+        const self = this;
+        const options = [];
+        const newTime = new Date;
+        if (type === "year") {
+          const year = newTime.getFullYear();
+          self.timeValue = year;
+          for (let i = 0; i < 3; i++) {
+            options.push({
+              value: year - i,
+              label: year - i
+            })
+          }
+        }
+        if (type === "month") {
+          const year = newTime.getFullYear();
+          const month = newTime.getMonth() + 1;
+          self.timeValue = `${year}/${month > 9 ? month : "0" + month}`;
+          for (let y = 0; y < 3; y++) {
+            for (let i = 1; i <= 12; i++) {
+              options.push({
+                value: `${year - y}/${i > 9 ? i : "0" + i}`,
+                label: `${year - y}/${i > 9 ? i : "0" + i}`
+              })
+            }
+          }
+          options.reverse();
+        }
+        self.timeOptions = options;
+      },
+
+      //设置默认日期
+      // defaultDate() {
+      //   //获取新的时间(2019.4.12）
+      //   let date = new Date()
+      //   //获取当前时间的年份转为字符串
+      //   let year = date.getFullYear().toString()  
+      //   //获取月份，由于月份从0开始，此处要加1，判断是否小于10，如果是在字符串前面拼接'0'
+      //   let month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1).toString() : (date.getMonth() + 1).toString()  //'04'
+      //   //获取天，判断是否小于10，如果是在字符串前面拼接'0'
+      //   let da = new Date(year, month, 0).getDate();
+      //   //字符串拼接，开始时间，结束时间
+      //   let end = year + '-' + month + '-' + da  
+      //   let beg = year + '-' + month + '-01'   
+      //   this.timeData = [new Date(beg), new Date(end)] //将值设置给插件绑定的数据
+      // },
+      changeData() {
+        if (this.chart) {
+          this.chart.destroy();
+        }
+        this.getData();
+      },
+      // 获取类别接口
+      getTypeOptions() {
+        const self = this;
+        axios.get(parent.IFM_CONTEXT + `/secure/core/module/mdm/orgs/queries/selectable`, { params: { ORGPROPERTY_SEQ: 'inspectionDepartment' } })
+          .then(function ({ data }) {
+            self.typeOptions = data.map(x => ({
+              value: x.orgName,
+              label: x.orgName
+            }))
+          })
+      },
+      getData() {
+        // var this_ = this;
+        // var formData = new FormData();
+        // if (Boolean(urlValue.date) == true) {
+        //   if (this_.timeData[0]) {
+        //     formData.append("beginDate", this_.timeData[0]);
+        //   }
+        //   if (this_.timeData[1]) {
+        //     formData.append("endDate", this_.timeData[1]);
+        //   }
+        // }
+
+        const this_ = this;
+        const formData = new FormData();
+        if (this_.timeValue != "" && this_.timeValue != null && this_.timeValue != undefined) {
+          let year = this_.timeValue.getFullYear();
+          let month = this_.timeValue.getMonth() + 1;
+          let timeValue = `${year}/${month > 9 ? month : "0" + month}`;
+          if (this_.timeType && this_.timeValue) {
+            formData.append(this_.timeType, timeValue);
+          }
+        }
+
+        axios.post(parent.IFM_CONTEXT + '/first/busicommon/instrumentusage/queries/' + this_.typeValue, formData).then(function (data) {
+          // axios.post(parent.IFM_CONTEXT + '/first/busicommon/personworkcount/queries/' + urlValue.type, formData).then(function (data) {
+          var vueData = [];
+          data = data.data;
+          if (data.length == 0) return;
+          for (var i = 0; i < data.length; i++) {
+            var tem = {};
+            tem.name = data[i].name;
+            tem.value = parseInt(data[i].value);
+            vueData.push(tem);
+          }
+          this_.workloadData = vueData;
+        }).then(function () {
+          this_.$nextTick(() => {
+            this_.drawColumnar();
+          });
+        });
+      },
+      // 柱状图
+      drawColumnar() {
+        this.chart = new G2.Chart({
+          container: "columnar",
+          autoFit: true,
+        });
+        this.chart.data(this.workloadData);
+
+
+        this.chart.axis("name", {
+          tickLine: null,
+        });
+
+        this.chart.axis("value", {
+          label: {
+            formatter: (val) => {
+              return +val + "次";
+            },
+          },
+        });
+
+        this.chart.scale("value", {
+          nice: true,
+        });
+
+        this.chart.tooltip({
+          showMarkers: false,
+          showTitle: false,
+        });
+        this.chart.interaction("element-active");
+
+        this.chart.legend(false);
+        this.chart
+          .interval()
+          .position("name*value")
+          .color("value", (val) => {
+            // if (val < 50) {
+            //   return "#ff4d4f";
+            // }
+            return "#F7C839";
+          }).tooltip("name*value", (name, value) => {
+            return {
+              name: `${name}`,
+              value: value + "次",
+            };
+          })
+          ;
+
+        this.chart.render();
+      },
+    }
+  });
+</script>

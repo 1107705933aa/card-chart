@@ -1,0 +1,562 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<style>
+  #app {
+    background-color: #f5f7fa;
+  }
+
+  .chart-cont {
+    width: 100%;
+    height: 100vh;
+  }
+
+  .plans {
+    height: 100%;
+    background-color: #fff;
+  }
+
+  .plans-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .plans-head-title {
+    display: flex;
+    align-items: center;
+    height: 40px;
+  }
+
+  .plans-head-title h5 {
+    margin: 0;
+    margin-left: 10px;
+    padding: 2px;
+  }
+
+  .plans-head-title a {
+    margin-left: 10px;
+    text-decoration: none;
+    color: #3C9BE6;
+    font-size: 14px;
+  }
+
+  .plans-seach {
+    margin-top: 5px;
+    margin-right: 10px;
+  }
+
+  .whole {
+    height: 100%;
+    background-color: #fff;
+    position: relative;
+  }
+
+  .whole-complete,
+  .whole-total {
+    position: absolute;
+    bottom: 20px;
+  }
+
+  .whole-complete h4,
+  .whole-total h4 {
+    text-align: center;
+    margin: 0;
+    margin-bottom: 7px;
+    font-size: 20px;
+  }
+
+  .whole-complete p,
+  .whole-total p {
+    text-align: center;
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .whole-complete {
+    left: 30px;
+  }
+
+  .whole-total {
+    right: 30px;
+  }
+
+  .whole-head,
+  .distribute-head {
+    height: 40px;
+    line-height: 40px;
+    margin: 0;
+    margin-left: 10px;
+  }
+
+  .geo-distribute {
+    margin-top: 5px;
+    height: calc(100% - 5px);
+    background-color: #fff;
+    position: relative;
+  }
+
+  .chart {
+    width: 100%;
+    height: calc(100% - 40px);
+  }
+
+  .el-picker-panel {
+    height: 183px !important;
+  }
+
+  .dingwei {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 100;
+    font-size: 20px;
+    cursor: pointer;
+  }
+</style>
+
+<div id="app">
+  <el-row :gutter="10" class="chart-cont" style="margin: 0;">
+    <el-col :xs="24" :sm="24" :md="18" :lg="18" :xl="18" style="height: 40%;">
+      <div class="plans">
+        <div class="plans-head">
+          <div class="plans-head-title">
+            <h5>计划数/完成数</h5>
+            <a href="">查看详情</a>
+          </div>
+          <div class="plans-seach">
+            <el-select size="mini" v-model="typeValue" placeholder="请选择" @blur="changeData">
+              <el-option v-for="item in typeOptions" :key="item.value" :label="item.label" :value="item.value">
+              </el-option>
+            </el-select>
+            <el-date-picker :picker-options="pickerOptions" v-model="timeValue" type="month" placeholder="选择月"
+              @blur="changeData" size="mini">
+            </el-date-picker>
+          </div>
+        </div>
+        <div :id="plansChartId" class="chart"></div>
+      </div>
+    </el-col>
+    <el-col :xs="24" :sm="24" :md="6" :lg="6" :xl="6" style="height: 40%;">
+      <div class="whole">
+        <h5 class="whole-head">抽样整体完成情况</h5>
+        <div :id="wholeChartId" class="chart"></div>
+        <div class="whole-complete">
+          <h4>{{ wholeData.completedNum }}</h4>
+          <p>抽样完成量</p>
+        </div>
+        <div class="whole-total">
+          <h4>{{ wholeData.total }}</h4>
+          <p>抽样总量</p>
+        </div>
+      </div>
+    </el-col>
+    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" style="height: 60%;">
+      <div class="geo-distribute">
+        <h5 class="distribute-head">抽检地域分布</h5>
+        <div :id="mapChartId" class="chart"></div>
+        <i @click="dingweiChange" class="el-icon-location-information dingwei"></i>
+      </div>
+    </el-col>
+  </el-row>
+</div>
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts-liquidfill.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      chartId: "columnar",
+      timeType: "month",
+      showDate: true,
+      timeValue: new Date(),
+      pickerOptions: {
+        disabledDate(time) {
+          let minYear = new Date().getFullYear() - 2
+          return time > Date.now() || time.getTime() < new Date(JSON.stringify(minYear))
+        }
+      },
+      timeOptions: [],
+      typeValue: "化工检验所",
+      typeOptions: [],
+      plansChartId: "plansId",
+      plansData: [],
+      wholeChartId: "wholeId",
+      wholeData: {
+        value: 0.8, // 抽样完成比例 number
+        completedNum: 80, // 抽样完成量 number
+        total: 100 // 抽样总量 number
+      },
+      mapChartId: "mapId",
+      mapsData: [],
+    },
+    created() {
+      if (urlValue.date != null && urlValue.date != undefined && urlValue.date != "") {
+        this.showDate = urlValue.date;
+      }
+      // 设置时间选择框内容
+      // this.timeFilter(this.timeType);
+      // 获取数据
+      this.getData();
+      // 获取类别
+      this.getTypeOptions();
+    },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      dingweiChange() {
+        this.drawMapChart();
+      },
+      // 获取类别接口
+      getTypeOptions() {
+        const self = this;
+        axios.get(parent.IFM_CONTEXT + `/secure/core/module/mdm/orgs/queries/selectable`, { params: { ORGPROPERTY_SEQ: 'inspectionDepartment' } })
+          .then(function ({ data }) {
+            self.typeOptions = data.map(x => ({
+              value: x.orgName,
+              label: x.orgName
+            }))
+          })
+      },
+      getData() {
+        const self = this;
+        const formData = new FormData();
+        if (self.timeValue != "" && self.timeValue != null && self.timeValue != undefined) {
+          let year = self.timeValue.getFullYear();
+          let month = self.timeValue.getMonth() + 1;
+          let timeValue = `${year}/${month > 9 ? month : "0" + month}`;
+          if (self.timeType && self.timeValue) {
+            formData.append(self.timeType, timeValue);
+          }
+        }
+        axios.post(parent.IFM_CONTEXT + '/first/busicommon/sampingwaterwave/queries/' + self.typeValue, formData)
+          .then(({ data }) => {
+            self.plansData = data;
+            self.$nextTick(() => {
+              self.drawPiansChart();
+            });
+          });
+        axios.post(parent.IFM_CONTEXT + '/first/busicommon/sampingtotalwaterwave/queries' + self.typeValue, formData)
+          .then(({ data }) => {
+            self.wholeData.completedNum = data.currentValue;
+            self.wholeData.total = data.totalValue;
+            if (data.totalValue == 0) {
+              data.currentValue = 0;
+              data.totalValue = 1;
+            }
+            self.wholeData.value = (data.currentValue / data.totalValue);
+            self.$nextTick(() => {
+              self.drawWholeChart();
+            });
+          });
+        axios.post(parent.IFM_CONTEXT + '/first/busicommon/sampingArea/queries/' + self.typeValue, formData)
+          .then(({ data }) => {
+            self.mapsData = data;
+            self.$nextTick(() => {
+              self.drawMapChart();
+            });
+          });
+      },
+      // 设置时间选择框内容
+      timeFilter(type) {
+        const self = this;
+        const options = [];
+        const newTime = new Date;
+        if (type === "year") {
+          const year = newTime.getFullYear();
+          self.timeValue = year;
+          for (let i = 0; i < 3; i++) {
+            options.push({
+              value: year - i,
+              label: year - i
+            })
+          }
+        }
+        if (type === "month") {
+          const year = newTime.getFullYear();
+          const month = newTime.getMonth() + 1;
+          self.timeValue = `${year}/${month > 9 ? month : "0" + month}`;
+          for (let y = 0; y < 3; y++) {
+            for (let i = 1; i <= 12; i++) {
+              options.push({
+                value: `${year - y}/${i > 9 ? i : "0" + i}`,
+                label: `${year - y}/${i > 9 ? i : "0" + i}`
+              })
+            }
+          }
+          options.reverse();
+        }
+        self.timeOptions = options;
+      },
+      // 改变接口
+      changeData() {
+        this.getData();
+      },
+      // 绘制柱状图
+      drawPiansChart() {
+        let myChart;
+
+        const typeData = sameMultCond(this.plansData, "info", ["type"])
+
+        const legendData = [];
+
+        const xData = sameMultCond(this.plansData, "info", ["name"]).map(n => n.name);
+        const series = [];
+
+        const colorList = ["rgba(115, 159, 253, 1)", "rgba(115, 223, 178, 1)"]
+
+        typeData.forEach((t, ti) => {
+          const valueData = [];
+          for (let x = 0; x < xData.length; x++) {
+            const numIndex = t.info.findIndex(f => f.name === xData[x]);
+            valueData.push(numIndex >= 0 ? t.info[numIndex].value : 0);
+          }
+          series.push({
+            name: t.type,
+            type: "bar",
+            stack: "总量",
+            barMaxWidth: 40,
+            itemStyle: {
+              normal: {
+                color: colorList[ti],
+              },
+            },
+            label: {
+              show: true,
+              position: "insideLeft"
+            },
+            data: valueData
+          })
+          legendData.push(t.type)
+        });
+
+        // 基于准备好的dom，初始化echarts实例
+        if (myChart !== null && myChart !== "" && myChart !== undefined) {
+          myChart.dispose(); //销毁
+        }
+        myChart = echarts.init(document.getElementById(this.plansChartId));
+        const option = {
+          grid: {
+            left: "3%",
+            right: "3%",
+            top: "15%",
+            bottom: "6%",
+            containLabel: true
+          },
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              label: {
+                show: true,
+                backgroundColor: '#fff',
+                color: '#556677',
+                borderColor: 'rgba(0,0,0,0)',
+                shadowColor: 'rgba(0,0,0,0)',
+                shadowOffsetY: 0,
+              },
+              lineStyle: {
+                width: 0,
+              },
+            },
+            backgroundColor: '#fff',
+            textStyle: {
+              color: '#5c6c7c',
+            },
+            padding: [10, 10],
+            extraCssText: 'box-shadow: 1px 0 2px 0 rgba(163,163,163,0.5)',
+          },
+          legend: {
+            top: '5%',
+            itemGap: 2,
+            textStyle: {
+              color: '#556677',
+            },
+            data: legendData,
+          },
+          xAxis: {
+            type: "value",
+            axisLine: {
+              show: false
+            },
+            axisTick: {
+              show: false
+            }
+          },
+          yAxis: {
+            type: "category",
+            realtimeSort: true,
+            data: xData,
+            axisLine: {
+              show: false,
+            },
+            axisTick: {
+              show: false,
+            },
+            axisLabel: {
+              color: "#555",
+              letterSpacing: "5",
+            },
+          },
+          series
+        };
+        myChart.setOption(option);
+        // 屏幕响应并对页面进行改变
+        window.addEventListener("resize", () => myChart.resize(), false);
+      },
+      // 绘制水波图
+      drawWholeChart() {
+        let myChart;
+
+        const seriesValue = this.wholeData.value;
+
+
+        // 基于准备好的dom，初始化echarts实例
+        if (myChart !== null && myChart !== "" && myChart !== undefined) {
+          myChart.dispose(); //销毁
+        }
+        myChart = echarts.init(document.getElementById(this.wholeChartId));
+        const option = {
+          grid: {
+            left: "3%",
+            right: "3%",
+            top: "15%",
+            bottom: "6%",
+            containLabel: true
+          },
+          title: [
+            {
+              text: "抽样整体完成",
+              left: '49%',
+              top: '35%',
+              textAlign: 'center',
+              textStyle: {
+                fontSize: '14',
+                fontWeight: '400',
+                color: '#000',
+                textAlign: 'center',
+              },
+            },
+          ],
+          series: {
+            type: 'liquidFill',
+            radius: '60%',
+            z: 1,
+            center: ['50%', '50%'],
+            color: ['#4FAFFE'],
+            data: [
+              seriesValue,
+              seriesValue
+            ],
+            label: {
+              fontSize: 20,
+              color: "#4FAFFE",
+              insideColor: "#fff"
+            },
+            outline: {
+              show: true,
+              itemStyle: {
+                borderWidth: 3,
+                borderColor: "#4FAFFE"
+              },
+              borderDistance: 3,
+            },
+            backgroundStyle: {
+              color: '#fff',
+            },
+            itemStyle: {
+              shadowBlur: 0
+            },
+          },
+        };
+        myChart.setOption(option);
+        // 屏幕响应并对页面进行改变
+        window.addEventListener("resize", () => myChart.resize(), false);
+      },
+      // 绘制地图
+      drawMapChart() {
+        const self = this;
+        let myChart;
+
+        const valueData = self.mapsData.map(x => x.value);
+        const visualMin = Math.min(...valueData);
+        const visualMax = Math.max(...valueData);
+
+        const nameMap = '广西省';
+
+        // 基于准备好的dom，初始化echarts实例
+        if (myChart !== null && myChart !== "" && myChart !== undefined) {
+          myChart.dispose(); //销毁
+        }
+        myChart = echarts.init(document.getElementById(self.mapChartId));
+        const option = {
+          grid: {
+            left: "3%",
+            right: "3%",
+            top: "15%",
+            bottom: "6%",
+            containLabel: true
+          },
+          visualMap: {
+            type: "piecewise",
+            splitNumber: 4,
+            min: visualMin,
+            max: visualMax,
+            color: ["#ED797A", "#F0B45E", "#4BDEC2", "#5EB0EC"],
+            // pieces: [
+            //   {
+            //     gt: 1,
+            //     color: "#ED797A"
+            //   }, {
+            //     value: 0,
+            //     color: "#ffffff"
+            //   }
+            // ],
+            show: false
+          },
+          series: [{
+            name: "gx",
+            type: 'map',
+            map: nameMap,
+            roam: true,
+            zoom: 12,
+            center: [109.229772, 23.733766],
+            label: {
+              show: true,
+              formatter: (param) => {
+                return param.value ? (param.name + "-" + param.value) : param.dataIndex > 34 ? param.name : "";
+              },
+              fontSize: "14",
+              color: "rgba(0,0,0,0.7)"
+            },
+            itemStyle: {
+              normal: {
+                borderColor: "rgba(0, 0, 0, 0.5)",
+                areaColor: "#ffffff",
+              },
+              emphasis: {
+                areaColor: "#ED797A",
+                shadowOffsetX: 0,
+                shadowOffsetY: 0,
+                borderWidth: 0
+              }
+            },
+            data: self.mapsData
+          }]
+        };
+        axios.get(parent.IFM_CONTEXT + "/static/first/busicommon/map/gx.json").then(({ data }) => {
+          echarts.registerMap(nameMap, data)
+          myChart.setOption(option, true);
+          // 屏幕响应并对页面进行改变
+          window.addEventListener("resize", () => myChart.resize(), false);
+        })
+      },
+    },
+  });
+</script>

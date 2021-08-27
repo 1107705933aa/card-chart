@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1920px" height="70px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>形状结合</title>
+    <defs>
+        <linearGradient x1="0%" y1="19.4454723%" x2="100%" y2="19.4454723%" id="linearGradient-1">
+            <stop stop-color="#FFFFFF" stop-opacity="0.800262238" offset="0%"></stop>
+            <stop stop-color="#FFFFFF" offset="50.0218431%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0.8" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="动物疾病监测控制" fill="url(#linearGradient-1)">
+            <path d="M735.814094,34.0002572 C734.624172,28.8033179 729.52,24 724,24 L0,24 L0,0 L1920,0 L1920,24 L1196,24 C1190.62644,24 1185.84009,28.2194081 1184.6248,33.561116 L1178,70 C1176.87233,75.4846696 1173.52,80 1168,80 L754,80 C748.48,80 745.478143,75.9699343 744,70 L734,26 L735.814094,34.0002572 Z" id="形状结合"></path>
+        </g>
+    </g>
+</svg>

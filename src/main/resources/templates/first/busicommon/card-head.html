@@ -1,0 +1,141 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/ka1.css}" />
+
+<div id="app" style="width:100%;height:100%;" v-for="countData">
+  <!-- 流海 -->
+  <div class="liu-content">
+    <span class="liu-title">{{countData.title}}</span>
+    <el-row type="flex" justify="space-between" class="left-content">
+      <el-col :span="9">
+        <el-row type="flex" class="row-bg" justify="space-around">
+          <el-col :span="3" :offset="1">
+            <div class="more-content">
+              <el-row class="ka1-info" type="flex" justify="center">
+                <el-col :span="14" style="display: flex;align-items: center;">
+                  <img class="ka1-icon" th:src="@{/static/first/busicommon/img/more.svg}" alt="">
+                </el-col>
+              </el-row>
+            </div>
+          </el-col>
+          <el-col :span="9">
+            <div class="ka1-content">
+              <el-row class="ka1-info" type="flex" justify="center">
+                <el-col :span="3" style="display: flex;align-items: center;">
+                  <img class="ka1-icon" th:src="@{/static/first/busicommon/img/dai.svg}" alt="">
+                </el-col>
+                <el-col :span="8" :offset="1">
+                  <span class="ka1-zi">{{countData.left1.name}}</span>
+                </el-col>
+                <el-col :span="7" :offset="1">
+                  <div class="kuai">{{countData.left1.value}}</div>
+                </el-col>
+              </el-row>
+            </div>
+          </el-col>
+          <el-col :span="11">
+            <div class="yi-content">
+              <el-row class="ka1-info" type="flex" justify="center">
+                <el-col :span="3" style="display: flex;align-items: center;">
+                  <img class="ka1-icon" th:src="@{/static/first/busicommon/img/yi.svg}" alt="">
+                </el-col>
+                <el-col :span="8">
+                  <span class="ka1-zi">{{countData.left2.name}}</span>
+                </el-col>
+                <el-col :span="9">
+                  <div class="yi-kuai">{{countData.left2.value}}</div>
+                </el-col>
+              </el-row>
+            </div>
+          </el-col>
+        </el-row>
+      </el-col>
+      <el-col :span="9">
+        <el-row type="flex" class="row-bg" justify="space-around">
+          <el-col :span="11">
+            <div class="jian-content">
+              <el-row class="ka1-info" type="flex" justify="center">
+                <el-col :span="3" style="display: flex;align-items: center;">
+                  <img class="ka1-icon" th:src="@{/static/first/busicommon/img/jian.svg}" alt="">
+                </el-col>
+                <el-col :span="8">
+                  <span class="ka1-zi">{{countData.right1.name}}</span>
+                </el-col>
+                <el-col :span="9">
+                  <div class="jian-kuai">{{countData.right1.value}}</div>
+                </el-col>
+              </el-row>
+            </div>
+          </el-col>
+          <el-col :span="9">
+            <div class="xi-content">
+              <el-row class="ka1-info" type="flex" justify="center">
+                <el-col :span="3" style="display: flex;align-items: center;">
+                  <img class="ka1-icon" th:src="@{/static/first/busicommon/img/xi.svg}" alt="">
+                </el-col>
+                <el-col :span="8" :offset="1">
+                  <span class="ka1-zi">{{countData.right2.name}}</span>
+                </el-col>
+                <el-col :span="7" :offset="1">
+                  <div class="xi-kuai">{{countData.right2.value}}</div>
+                </el-col>
+              </el-row>
+            </div>
+          </el-col>
+          <el-col :span="3">
+            <div class="tui-content">
+              <el-row class="ka1-info" type="flex" justify="center">
+                <el-col :span="15" style="display: flex;align-items: center;">
+                  <img class="ka1-icon" th:src="@{/static/first/busicommon/img/tui.svg}" alt="">
+                </el-col>
+              </el-row>
+            </div>
+          </el-col>
+        </el-row>
+      </el-col>
+    </el-row>
+  </div>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  var title = parent.Gikam.propI18N('T_CORE_PANELHEAD.TITLE');
+  const app = new Vue({
+    el: "#app",
+    data: {
+      countData: {
+        /* todoCount:'11',
+        testedCount:'222',
+        tobetestCount:'3333',
+        systemCount:'4', */
+      }
+    },
+    // 实例被挂载后调用
+    created: function () {
+
+    },
+    mounted: function () {
+      this.getData();
+    },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      getData() {
+        var this_ = this;
+        parent.Gikam.post(parent.IFM_CONTEXT + '/first/busicommon/headcount/queries/' + urlValue.type).done(function (data) {
+          this_.countData = data;
+          this_.countData.title = title;
+        });
+      },
+    }
+  });
+</script>

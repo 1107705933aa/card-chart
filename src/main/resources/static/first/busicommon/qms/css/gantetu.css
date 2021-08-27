@@ -1,0 +1,50 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.baifenbai {
+  width: 100%;
+  height: 100%;
+}
+
+#chartmain {
+  width: 100%;
+  height: 100%;
+}
+
+#chartmain2 {
+  width: 100%;
+  height: 50%;
+}
+
+.borderd {
+  width: 100%;
+  height: 1px;
+  background-color: #163681;
+}
+
+#app {
+  height: 100%;
+  width: 100%;
+  /* padding: 20px; */
+  /* background-color: #111449; */
+}
+
+.process {
+  width: 100%;
+  height: 100%;
+  padding-top: 40px;
+  position: relative;
+}
+
+.process-cont {
+  width: 100%;
+  height: 100%;
+}
+
+.process-cont--item {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+}

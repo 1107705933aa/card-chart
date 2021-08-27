@@ -1,0 +1,320 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<div id="app">
+  <!-- 报工表格 -->
+  <div class="head-time">
+    <div class="block" size="mini">
+      <el-button type="primary" size="mini" @click="saveData">保存</el-button>
+      <el-date-picker style="width: 127px !important;" v-model="timeData" type="daterange" range-separator="至"
+        start-placeholder="开始日期" end-placeholder="结束日期" @blur="changeData">
+      </el-date-picker>
+    </div>
+  </div>
+  <el-row class="chart-content">
+    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="baifenbai">
+      <el-table :data="tableData" style="width: 100%" height="100%" :cell-style="tableRowStyle"
+        :header-cell-style="tableHeaderColor">
+        <el-table-column prop="projno" label="任务名称" fixed width="180">
+        </el-table-column>
+        <el-table-column label="周一">
+          <el-table-column label="正常">
+            <template slot-scope="scope">
+              <el-input style="width:50px !important;" v-model="scope.row.monday"></el-input>
+            </template>
+          </el-table-column>
+          <el-table-column label="加班">
+            <template slot-scope="scope">
+              <el-input style="width:50px !important;" v-model="scope.row.mondayOT"></el-input>
+            </template>
+          </el-table-column>
+        </el-table-column>
+        <el-table-column label="周二">
+          <el-table-column label="正常">
+            <template slot-scope="scope">
+              <el-input style="width:50px !important;" v-model="scope.row.tuesday"></el-input>
+            </template>
+          </el-table-column>
+          <el-table-column label="加班">
+            <template slot-scope="scope">
+              <el-input style="width:50px !important;" v-model="scope.row.tuesdayOT"></el-input>
+            </template>
+          </el-table-column>
+        </el-table-column>
+        <el-table-column label="周三">
+          <el-table-column label="正常">
+            <template slot-scope="scope">
+              <el-input style="width:50px !important;" v-model="scope.row.wednesday"></el-input>
+            </template>
+          </el-table-column>
+          <el-table-column label="加班">
+            <template slot-scope="scope">
+              <el-input style="width:50px !important;" v-model="scope.row.wednesdayOT"></el-input>
+            </template>
+          </el-table-column>
+        </el-table-column>
+        <el-table-column label="周四">
+          <el-table-column label="正常">
+            <template slot-scope="scope">
+              <el-input style="width:50px !important;" v-model="scope.row.thursday"></el-input>
+            </template>
+          </el-table-column>
+          <el-table-column label="加班">
+            <template slot-scope="scope">
+              <el-input style="width:50px !important;" v-model="scope.row.thursdayOT"></el-input>
+            </template>
+          </el-table-column>
+        </el-table-column>
+        <el-table-column label="周五">
+          <el-table-column label="正常">
+            <template slot-scope="scope">
+              <el-input style="width:50px !important;" v-model="scope.row.friday"></el-input>
+            </template>
+          </el-table-column>
+          <el-table-column label="加班">
+            <template slot-scope="scope">
+              <el-input style="width:50px !important;" v-model="scope.row.fridayOT"></el-input>
+            </template>
+          </el-table-column>
+        </el-table-column>
+        <el-table-column label="周六">
+          <el-table-column label="正常">
+            <template slot-scope="scope">
+              <el-input style="width:50px !important;" v-model="scope.row.saturday"></el-input>
+            </template>
+          </el-table-column>
+          <el-table-column label="加班">
+            <template slot-scope="scope">
+              <el-input style="width:50px !important;" v-model="scope.row.saturdayOT"></el-input>
+            </template>
+          </el-table-column>
+        </el-table-column>
+        <el-table-column label="周日">
+          <el-table-column label="正常">
+            <template slot-scope="scope">
+              <el-input style="width:50px !important;" v-model="scope.row.sunday"></el-input>
+            </template>
+          </el-table-column>
+          <el-table-column label="加班">
+            <template slot-scope="scope">
+              <el-input v-model="scope.row.sundayOT"></el-input>
+            </template>
+          </el-table-column>
+        </el-table-column>
+        <el-table-column fixed="right" label="工作日志" width="100">
+          <template slot-scope="scope">
+            <el-button @click="handleClick(scope.row)" type="text" size="small">填写日志</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-col>
+  </el-row>
+  <el-dialog title="填写日志" :visible.sync="dialogVisible" width="70%">
+    <el-form ref="form" :model="form" label-width="80px">
+      <el-form-item label="周一">
+        <el-input type="textarea" v-model="form.mondayContent"></el-input>
+      </el-form-item>
+      <el-form-item label="周二">
+        <el-input type="textarea" v-model="form.tuesdayContent"></el-input>
+      </el-form-item>
+      <el-form-item label="周三">
+        <el-input type="textarea" v-model="form.wednesdayContent"></el-input>
+      </el-form-item>
+      <el-form-item label="周四">
+        <el-input type="textarea" v-model="form.thursdayContent"></el-input>
+      </el-form-item>
+      <el-form-item label="周五">
+        <el-input type="textarea" v-model="form.fridayContent"></el-input>
+      </el-form-item>
+      <el-form-item label="周六">
+        <el-input type="textarea" v-model="form.saturdayContent"></el-input>
+      </el-form-item>
+      <el-form-item label="周日">
+        <el-input type="textarea" v-model="form.sundayContent"></el-input>
+      </el-form-item>
+    </el-form>
+    <span slot="footer" class="dialog-footer">
+      <el-button @click="dialogVisible = false" size="mini">取 消</el-button>
+      <el-button type="primary" @click="onSubmit" size="mini">确 定</el-button>
+    </span>
+  </el-dialog>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  const app = new Vue({
+    el: "#app",
+    data: {
+      timeData: ['', ''],
+      dialogVisible: false,
+      form: {
+        mondayContent: "",
+        tuesdayContent: "",
+        wednesdayContent: "",
+        thursdayContent: "",
+        fridayContent: "",
+        saturdayContent: "",
+        sundayContent: "",
+      },
+      tableData: [{
+        projno: '上海市农产品质量安全中心LIMS软件销售',
+        monday: 8,
+        mondayOT: 8,
+        tuesday: 8,
+        tuesdayOT: 8,
+        wednesday: 8,
+        wednesdayOT: 8,
+        thursday: 8,
+        thursdayOT: 8,
+        friday: 8,
+        fridayOT: 8,
+        saturday: 8,
+        saturdayOT: 8,
+        sunday: 8,
+        sundayOT: 8,
+      }, {
+        projno: '浙江越华能源检测有限公司曹妃甸分公司LIMS!',
+        monday: 8,
+        mondayOT: 8,
+        tuesday: 8,
+        tuesdayOT: 8,
+        wednesday: 8,
+        wednesdayOT: 8,
+        thursday: 8,
+        thursdayOT: 8,
+        friday: 8,
+        fridayOT: 8,
+        saturday: 8,
+        saturdayOT: 8,
+        sunday: 8,
+        sundayOT: 8,
+      }, {
+        projno: '上海际研生物医药开发有限公司LIMS系统软件',
+        monday: 8,
+        mondayOT: 8,
+        tuesday: 8,
+        tuesdayOT: 8,
+        wednesday: 8,
+        wednesdayOT: 8,
+        thursday: 8,
+        thursdayOT: 8,
+        friday: 8,
+        fridayOT: 8,
+        saturday: 8,
+        saturdayOT: 8,
+        sunday: 8,
+        sundayOT: 8,
+      }, {
+        projno: '西安奕斯伟硅片技术有限公司LIMS项目',
+        monday: 8,
+        mondayOT: 8,
+        tuesday: 8,
+        tuesdayOT: 8,
+        wednesday: 8,
+        wednesdayOT: 8,
+        thursday: 8,
+        thursdayOT: 8,
+        friday: 8,
+        fridayOT: 8,
+        saturday: 8,
+        saturdayOT: 8,
+        sunday: 8,
+        sundayOT: 8,
+      }, {
+        projno: '日常管理-2020 - LIMS第一事业部',
+        monday: 8,
+        mondayOT: 8,
+        tuesday: 8,
+        tuesdayOT: 8,
+        wednesday: 8,
+        wednesdayOT: 8,
+        thursday: 8,
+        thursdayOT: 8,
+        friday: 8,
+        fridayOT: 8,
+        saturday: 8,
+        saturdayOT: 8,
+        sunday: 8,
+        sundayOT: 8,
+      }, {
+        projno: 'LIMSV12版本前端迭代研发项目',
+        monday: 8,
+        mondayOT: 8,
+        tuesday: 8,
+        tuesdayOT: 8,
+        wednesday: 8,
+        wednesdayOT: 8,
+        thursday: 8,
+        thursdayOT: 8,
+        friday: 8,
+        fridayOT: 8,
+        saturday: 8,
+        saturdayOT: 8,
+        sunday: 8,
+        sundayOT: 8,
+      },]
+    },
+    created: function () {
+      this.defaultDate();
+      this.getData();
+    },
+    methods: {
+      saveData() {
+
+      },
+      onSubmit() {
+        this.dialogVisible = false;
+      },
+      handleClick(row) {
+        this.dialogVisible = true;
+      },
+      //设置表格行的样式
+      tableRowStyle({ row, rowIndex }) {
+        return "font-size:12px;text-align:center";
+      },
+      //设置表头行的样式
+      tableHeaderColor({ row, column, rowIndex, columnIndex }) {
+        return "font-wight:500;font-size:14px;text-align:center";
+      },
+      //设置默认日期
+      defaultDate() {
+        var date1 = new Date(),
+          time1 = date1.getFullYear() + "-" + (date1.getMonth() + 1) + "-" + date1.getDate();
+        var date2 = new Date(date1);
+        date2.setDate(date1.getDate() + 7);
+        var time2 = date2.getFullYear() + "-" + (date2.getMonth() + 1) + "-" + date2.getDate();
+        this.timeData = [new Date(time1), new Date(time2)]
+      },
+      changeData() {
+        this.getData();
+      },
+      getData() {
+        var this_ = this;
+        var formData = new FormData();
+        if (this_.timeData[0]) {
+          formData.append("beginDate", this_.timeData[0]);
+        }
+        if (this_.timeData[1]) {
+          formData.append("endDate", this_.timeData[1]);
+        }
+
+        // axios.post(parent.IFM_CONTEXT + '/first/busicommon/personworkcount/queries/', formData).then(function (data) {
+
+        // }).then(function () {
+
+        // });
+      },
+    }
+  });
+</script>
+
+<style scoped>
+  .el-input__inner {
+    width: 50px !important;
+  }
+</style>

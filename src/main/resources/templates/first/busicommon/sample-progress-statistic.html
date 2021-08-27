@@ -1,0 +1,134 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/examine.css}" />
+<div id="app" style="width:100%;height:100%;">
+  <!-- 样品检验进度 -->
+  <el-row class="examine-content" style="width:100%;height:100%;">
+    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" style="width:100%;height:100%;">
+      <div id="examine" style="width:100%;height:100%;"></div>
+    </el-col>
+  </el-row>
+</div>
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      // 样品检验进度
+      progressData: [
+        // { progress: "计划样", probability: 70, expected: 100 },
+        // { progress: "待采样", probability: 20, expected: 100 },
+        // { progress: "待接收", probability: 46, expected: 100 },
+        // { progress: "待分配", probability: 32, expected: 100 },
+        // { progress: "检测中", probability: 47, expected: 100 },
+        // { progress: "待审核", probability: 89, expected: 100 },
+        // { progress: "待报告编制", probability: 72, expected: 100 },
+        // { progress: "待报告审批", probability: 90, expected: 100 },
+        // { progress: "待报告发放", probability: 85, expected: 100 },
+      ],
+    },
+    // 实例被挂载后调用
+    created: function () {
+      this.getData();
+    },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      getData() {
+        var this_ = this;
+        parent.Gikam.post(parent.IFM_CONTEXT + '/first/busicommon/sampleprogress/queries/' + urlValue.type).done(function (data) {
+          var vueData = [];
+          if (data.length == 0) return;
+          for (var i = 0; i < data.length; i++) {
+            var tem = {};
+            tem.progress = data[i].progressName;
+            tem.probability = Math.floor(data[i].currentValue / data[i].totalValue * 100);
+            tem.expected = 100;
+            vueData.push(tem);
+          }
+          this_.progressData = vueData;
+        }).done(function () {
+          this_.$nextTick(() => {
+            this_.getExamine();
+          });
+        });
+      },
+      // 样品检验进度
+      getExamine() {
+        const chart = new G2.Chart({
+          container: "examine",
+          autoFit: true,
+        });
+        chart.data(this.progressData);
+        chart.scale({
+          expected: {
+            min: 0,
+            max: 100,
+            sync: "value",
+          },
+          probability: {
+            sync: "value",
+            formatter(val) {
+              return val + "%";
+            },
+            alias: "检测进度",
+          },
+        });
+
+        chart.axis("progress", {
+          title: null,
+          tickLine: null,
+          line: null,
+        });
+        chart.axis("probability", false);
+        chart.axis("expected", false);
+        chart.legend(false);
+        chart.tooltip({
+          shared: true,
+          showMarkers: false,
+        });
+
+        chart
+          .interval()
+          .position("progress*expected")
+          .color("#F1F1F1")
+          .shape("border-radius")
+          .tooltip("")
+          .style({
+            opacity: 0.6,
+          });
+        chart
+          .interval()
+          .position("progress*probability")
+          .color("#50B9FF")
+          .tooltip("probability")
+          .shape("border-radius")
+          .label("probability", (val) => {
+            return {
+              style: {
+                fill: "#8d8d8d",
+              },
+              offset: 10,
+              content: (originData) => {
+                return originData.probability + "%";
+              },
+            };
+          });
+
+        chart.coordinate().transpose();
+
+        chart.interaction("active-region");
+        chart.render();
+      },
+    }
+  });
+</script>

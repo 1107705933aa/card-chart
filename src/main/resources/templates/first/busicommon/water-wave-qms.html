@@ -1,0 +1,228 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+
+<div id="app">
+  <div class="head-time" v-if="showDate">
+    <div class="block" size="mini">
+      <el-date-picker v-model="timeData" type="daterange" range-separator="至" start-placeholder="开始日期"
+        end-placeholder="结束日期" @blur="changeData">
+      </el-date-picker>
+    </div>
+  </div>
+  <div :class="showDate?'chart-content':'chart-content2'" style="padding: 0 !important;">
+    <el-row class="baifenbai">
+      <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="baifenbai">
+        <div class="baifenbai" id="waterWave"></div>
+      </el-col>
+    </el-row>
+  </div>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts-liquidfill-qms.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      timeData: [],
+      showDate: false,
+      waterWaveData: [
+        {
+          name: "",
+          titleLeft: "13%",
+          titleTop: "40%",
+          center: ["16%", "20%"],
+          color: "#36B6D9",
+          value: 0,
+          rate: 0
+        },
+        {
+          name: "",
+          titleLeft: "50%",
+          titleTop: "40%",
+          center: ["51%", "20%"],
+          color: "#DBA393",
+          value: 0,
+          rate: 0
+        },
+        {
+          name: "",
+          titleLeft: "83%",
+          titleTop: "40%",
+          center: ["84%", "20%"],
+          color: "#73CB97",
+          value: 0,
+          rate: 0
+        },
+        {
+          name: "",
+          titleLeft: "26%",
+          titleTop: "87%",
+          center: ["27%", "67%"],
+          color: "#D3B569",
+          value: 0,
+          rate: 0
+        },
+        {
+          name: "",
+          titleLeft: "72%",
+          titleTop: "87%",
+          center: ["73%", "67%"],
+          color: "#73CB97",
+          value: 0,
+          rate: 0
+        },
+      ],
+    },
+    created: function () {
+      if (urlValue.date != null && urlValue.date != undefined && urlValue.date != "") {
+        this.showDate = urlValue.date;
+      }
+      this.defaultDate();
+      this.getData();
+    },
+    destroyed() { },
+    methods: {
+      //设置默认日期
+      defaultDate() {
+        var pre = new Date();
+        pre.setFullYear(pre.getFullYear() - 1);
+        var now = new Date();
+        this.timeData = [new Date(pre), new Date(now)];
+      },
+      changeData() {
+        this.getData();
+      },
+      getData() {
+        var this_ = this;
+        var formData = new FormData();
+        if (this_.timeData[0]) {
+          formData.append("beginDate", this_.timeData[0]);
+        }
+        if (this_.timeData[1]) {
+          formData.append("endDate", this_.timeData[1]);
+        }
+        axios.post(parent.IFM_CONTEXT + '/first/busicommon/waterwaveqms/queries/' + urlValue.type, formData).then(function (data) {
+          data = data.data;
+          var vueData = [];
+          if (data.length == 0) return;
+          var total = 0;
+          for (var i = 0; i < data.length; i++) {
+            total = total + parseInt(data[i].value);
+          }
+          data.forEach((item, index1) => {
+            this_.waterWaveData.forEach((item1, index2) => {
+              if (index1 == index2) {
+                item1.name = item.name;
+                item1.value = item.value;
+                item1.rate = (item.value / total * 100).toFixed(2) / 100;
+              }
+            });
+          });
+        }).then(function () {
+          this_.$nextTick(() => {
+            this_.drawWave();
+          });
+        });
+      },
+      drawWave() {
+        const self = this;
+        const title = [];
+        const series = [];
+
+        self.waterWaveData.forEach(item => {
+          title.push({
+            text: item.name,
+            left: item.titleLeft,
+            top: item.titleTop,
+            textAlign: "center",
+            textStyle: {
+              color: "#CAD2DB",
+              fontSize: 12
+            }
+          });
+          series.push({
+            type: "liquidFill",
+            radius: "35%",
+            // 水球颜色
+            color: [item.color],
+            center: item.center,
+            label: {
+              formatter: param => {
+                return param.data.num;
+              },
+              fontSize: 16,
+              color: item.color,
+              insideColor: "#fff"
+            },
+            itemStyle: {
+              opacity: 0.5, //波浪的透明度
+              shadowBlur: 10, //波浪的阴影范围
+              shadowColor: item.color //阴影颜色
+            },
+            outline: {
+              show: true, //是否显示轮廓 布尔值
+              borderDistance: 0, //外部轮廓与图表的距离 数字
+              itemStyle: {
+                borderWidth: 0 //边框的宽度
+              }
+            },
+            emphasis: {
+              itemStyle: {
+                opacity: 1 //鼠标经过波浪颜色的透明度
+              }
+            },
+            data: [
+              {
+                value: item.rate,
+                num: item.value
+              },
+              item.rate + 0.0244,
+              item.rate - 0.0196,
+              item.rate - 0.0396,
+              item.rate - 0.0486
+            ],
+            amplitude: 4, //振幅 是波浪的震荡幅度 可以取具体的值 也可以是百分比 百分比下是按图标的直径来算
+            waveLength: "50%", //波的长度 可以是百分比也可以是具体的像素值  百分比下是相对于直径的 取得越大波浪的起伏越小
+            backgroundStyle: {
+              borderWidth: 1,
+              borderColor: item.color,
+              color: "#fff", //图表的背景颜色
+              itemStyle: {
+                shadowBlur: 10, //设置无用
+                shadowColor: item.color, //设置无用
+                opacity: 1 //设置无用
+              }
+            },
+            direction: "left", //波移动的速度 两个参数  left 从右往左 right 从左往右
+            waveAnimation: true, //控制波动画的开关  值是布尔值 false 是关闭动画 true 是开启动画 也是默认值
+            animationEasing: "linear", //初始动画
+            animationEasingUpdate: "quarticInOut", //数据更新的动画效果
+            animationDuration: 3000, //初始动画的时长，支持回调函数，可以通过每个数据返回不同的 delay 时间实现更绚丽的初始动画效果
+            animationDurationUpdate: 300 //数据更新动画的时长
+          });
+        });
+        // 基于准备好的dom，初始化echarts实例
+        const myChart = echarts.init(document.getElementById("waterWave"));
+        const option = { title, series };
+        myChart.setOption(option);
+        setTimeout(() => {
+          myChart.resize();
+        }, 2000);
+        // 屏幕响应并对页面进行改变
+        window.onresize = () => {
+          myChart.resize();
+        };
+      }
+    }
+  });
+</script>

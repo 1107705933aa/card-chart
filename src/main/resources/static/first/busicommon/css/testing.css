@@ -1,0 +1,219 @@
+ul,
+li {
+  list-style: none;
+  text-decoration: none;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.popup-content .find-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 20px 0;
+  color: #373737;
+}
+
+.popup-content /deep/ .el-form-item__label {
+  font-size: 12px;
+  color: #606266;
+}
+
+.popup-content /deep/ .el-date-editor--daterange.el-input,
+.popup-content .el-date-editor--daterange.el-input__inner,
+.popup-content .el-date-editor--timerange.el-input,
+.popup-content .el-date-editor--timerange.el-input__inner {
+  width: 200px;
+}
+
+.popup-content /deep/ .el-checkbox {
+  margin-right: 15px;
+}
+
+.shaixuan { 
+  border: 0px;
+  width: 35px;
+  font-size: 12px;
+  padding: 0;
+  color: #a9a9aa;
+  background-color: #eff0f1;
+}
+
+.testing-content {
+  width: 100%;
+  height: calc(100% - 35px);
+  padding: 5px;
+  /* box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  background-color: #fff; */
+}
+
+ .card-head {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+ .card-head .card-title {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: #2d2d2d;
+}
+
+ .card-head .card-title img {
+  height: 17px;
+  margin-right: 10px;
+}
+
+ .card-head .card-more {
+  width: 50px;
+  height: 30px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  border-radius: 8px;
+  color: #a9a9aa;
+  background-color: red;
+  background-color: #eff0f1;
+}
+
+ .card-head .card-more img {
+  width: 15px;
+  margin-right: 6px;
+}
+
+ .table-head {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 42px;
+  margin-top: 2px;
+  background-color: #f2f4f8;
+}
+
+ .table-head .el-col {
+  font-size: 13px;
+  text-align: center;
+}
+
+ .table-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px;
+  /* height: 42px; */
+  /* margin-top: 5px; */
+  box-shadow: 0 0.5px 0 0 rgba(0, 0, 0, 0.1);
+}
+
+ .table-content .el-col {
+  font-size: 13px;
+  text-align: center;
+}
+
+.table-scroll {
+  height: 100%;
+  overflow-y: scroll;
+  scrollbar-width: none; /* firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+::-webkit-scrollbar {
+  display: none; /* Chrome Safari */
+}
+
+/* .title-more {
+  width: 40px;
+  height: 20px;
+  float: right;
+  font-size: 12px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  color: #8c8c8c;
+} */
+
+.head-time {
+  height: 35px;
+  /* margin-top: 5px; */
+  margin-right: 5px;
+}
+
+.block {
+  float: right;
+}
+
+.el-input__inner {
+  width: 127px !important;
+}
+
+.el-range-separator {
+  font-size: 12px !important;
+}
+
+.el-input__inner {
+  height: 30px !important;
+  line-height: 30px !important;
+}
+.el-range__icon,
+.el-range-separator {
+  line-height: 23px !important;
+}
+
+.el-date-editor .el-range-input,
+.el-date-editor .el-range-separator {
+  font-size: 12px !important;
+}
+
+.el-date-editor .el-range-input {
+  width: 54% !important;
+}
+
+.el-date-editor .el-range__close-icon {
+  width: 0px !important;
+  line-height: 23px !important;
+  margin-right: 7px !important;
+}
+
+/* 改日期大小 */
+.el-picker-panel {
+  z-index: 2007;
+  top: 10px !important;
+  left: 0 !important;
+}
+
+.el-date-range-picker {
+  width: 420px !important;
+}
+
+.el-date-table {
+  font-size: 12px;
+}
+
+.el-date-table td {
+  padding: 0 !important;
+}
+
+.el-date-range-picker__header div {
+  font-size: 13px !important;
+}
+
+.el-date-range-picker .el-picker-panel__body {
+  min-width: 113px !important;
+}
+
+.el-date-table td,
+.el-date-table td div {
+  height: 20px !important;
+}
+
+.el-popper[x-placement^="bottom"] {
+  margin-top: -10px !important;
+}
+
+.el-date-range-picker__content {
+  padding: 7px 16px 16px !important;
+}

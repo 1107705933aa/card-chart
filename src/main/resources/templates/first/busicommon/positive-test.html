@@ -1,0 +1,161 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/testing.css}" />
+<div id="app" style="width:100%;height:100%;">
+  <div class="head-time" v-if="showDate">
+    <div class="block" size="mini">
+      <el-date-picker v-model="timeData" type="daterange" range-separator="至" start-placeholder="开始日期"
+        end-placeholder="结束日期" @blur="changeData">
+      </el-date-picker>
+    </div>
+  </div>
+  <!-- 阳性检测单 -->
+  <el-row :class="showDate?'chart-content':'chart-content2'">
+    <!-- <div v-if="urlValue.more!=undefined" class="title-more" @click="openMenu(urlValue.more)">
+      更多<i class="el-icon-arrow-right"></i>
+    </div> -->
+    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="baifenbai">
+      <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="baifenbai">
+        <el-row class="table-head">
+          <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5">受理单号</el-col>
+          <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5">场名</el-col>
+          <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5">检测项目</el-col>
+          <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5">检测日期</el-col>
+          <el-col :xs="4" :sm="4" :md="4" :lg="4" :xl="4">阳性数</el-col>
+        </el-row>
+        <div class="table-scroll" style="width:100%;height:calc(100% - 42px);">
+          <el-row class="table-content" v-for="(item, index) in testingData" :key="index">
+            <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5"
+              style="color:#0078FF;text-decoration:underline;font-weight:700;cursor: pointer;">
+              <span @click="openMenu(item.menuId)">{{item.num}}</span>
+            </el-col>
+            <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5">{{
+              item.name
+              }}</el-col>
+            <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5">{{
+              item.project
+              }}</el-col>
+            <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5">{{
+              item.date
+              }}</el-col>
+            <el-col :xs="4" :sm="4" :md="4" :lg="4" :xl="4">{{
+              item.number
+              }}</el-col>
+          </el-row>
+        </div>
+      </el-col>
+    </el-col>
+  </el-row>
+</div>
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      // 阳性检测单
+      testingData: [
+        /* {
+          num: "2020-WT001",
+          name: "Xxx养猪场",
+          project: "口蹄疫A型病毒检测",
+          date: "2020-11-05",
+          number: "1",
+        },
+        {
+          num: "2020-WT002",
+          name: "Xxx养猪场",
+          project: "口蹄疫B型病毒检测",
+          date: "2020-11-06",
+          number: "2",
+        },
+        {
+          num: "2020-WT003",
+          name: "Xxx养猪场",
+          project: "口蹄疫C型病毒检测",
+          date: "2020-11-07",
+          number: "3",
+        },
+        {
+          num: "2020-WT004",
+          name: "Xxx养猪场",
+          project: "口蹄疫D型病毒检测",
+          date: "2020-11-08",
+          number: "4",
+        }, */
+      ],
+
+      // 筛选
+      sizeForm: {
+        date1: "",
+        type: [],
+        type2: [],
+        type3: [],
+      },
+      timeData: [],
+      showDate: false
+    },
+    created: function () {
+      if (urlValue.date != null && urlValue.date != undefined && urlValue.date != "") {
+        this.showDate = urlValue.date;
+      }
+      this.defaultDate();
+      this.getData();
+    },
+    // 实例被挂载后调用
+    mounted: function () { },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      //设置默认日期
+      defaultDate() {
+        var pre = new Date();
+        pre.setFullYear(pre.getFullYear() - 1);
+        var now = new Date();
+        this.timeData = [new Date(pre), new Date(now)];
+      },
+      changeData() {
+        this.getData();
+      },
+      getData() {
+        var this_ = this;
+        var formData = new FormData();
+        if (this_.timeData[0]) {
+          formData.append("beginDate", this_.timeData[0]);
+        }
+        if (this_.timeData[1]) {
+          formData.append("endDate", this_.timeData[1]);
+        }
+        axios.post(parent.IFM_CONTEXT + '/first/busicommon/positivetest/queries/' + urlValue.type, formData).then(function (data) {
+          data = data.data;
+          var vueData = [];
+          if (data.length == 0) return;
+          for (var i = 0; i < data.length; i++) {
+            var tem = {};
+            tem.num = data[i].folderNo;
+            tem.name = data[i].locationName;
+            tem.project = data[i].testName;
+            tem.date = data[i].testDate;
+            tem.number = data[i].qty;
+            vueData.push(tem);
+          }
+          this_.testingData = vueData;
+        });
+      },
+      // 筛选
+      onSubmit() {
+      },
+      openMenu(id) {
+        parent.workspace.activeNodeById(id);
+      }
+    }
+  });
+</script>

@@ -1,0 +1,156 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/qms/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/qms/css/hege.css}" />
+
+<div id="app">
+    <div class="baifenbai" id="histogramNumber"></div>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+    var urlValue = getRequestParam(document.URL);
+    if (urlValue.type == undefined) {
+        urlValue.type = "";
+    }
+    const app = new Vue({
+        el: "#app",
+        data: {
+            myChart: null,
+            histogramData: [
+                /* {
+                    name: "原物料",
+                    value: 10
+                },
+                {
+                    name: "成品",
+                    value: 50
+                },
+                {
+                    name: "制程",
+                    value: 80
+                },
+                {
+                    name: "水处理",
+                    value: 30
+                } */
+            ],
+        },
+        created: function () {
+            this.getDate();
+        },
+        methods: {
+            getDate() {
+                var this_ = this;
+                parent.Gikam.post(parent.IFM_CONTEXT + '/first/busicommon/samplecountqms/queries/' + urlValue.type).done(function (data) {
+                    if (data.length == 0) return;
+                    this_.histogramData = data;
+                }).done(function () {
+                    this_.$nextTick(() => {
+                        this_.drawHistogram();
+                    });
+                });
+            },
+            drawHistogram() {
+                var self = this;
+                var xData = self.histogramData.map(item => item.name);
+                var yData = self.histogramData.map(item => item.value);
+                // 基于准备好的dom，初始化echarts实例
+                self.myChart = echarts.init(document.getElementById("histogramNumber"));
+                var option = {
+                    grid: {
+                        top: "40",
+                        left: "15",
+                        right: "15",
+                        bottom: "15",
+                        containLabel: true
+                    },
+                    xAxis: {
+                        data: xData,
+                        axisTick: {
+                            show: false
+                        },
+                        axisLine: {
+                            lineStyle: {
+                                color: "#CAD2DB"
+                            }
+                        },
+                        axisLabel: {
+                            color: "#CAD2DB",
+                            fontFamily: "PingFangSC-Semibold",
+                            fontSize: 14
+                        }
+                    },
+                    yAxis: {
+                        type: "value",
+                        axisLine: {
+                            lineStyle: {
+                                color: "#CAD2DB"
+                            }
+                        },
+                        axisLabel: {
+                            color: "#CAD2DB",
+                            fontFamily: "PingFangSC-Semibold",
+                            fontSize: 12
+                        },
+                        axisTick: {
+                            show: false
+                        },
+                        splitLine: {
+                            show: false
+                        },
+                        interval: 100
+                    },
+                    series: [
+                        {
+                            type: "bar",
+                            barWidth: 18,
+                            itemStyle: {
+                                normal: {
+                                    color: new echarts.graphic.LinearGradient(
+                                        0,
+                                        0,
+                                        0,
+                                        1,
+                                        [
+                                            {
+                                                offset: 0,
+                                                color: "#32FFF9"
+                                            },
+                                            {
+                                                offset: 1,
+                                                color: "#13BCDB"
+                                            }
+                                        ],
+                                        false
+                                    )
+                                }
+                            },
+                            label: {
+                                normal: {
+                                    show: true,
+                                    fontSize: 12,
+                                    fontFamily: "PingFangSC-Semibold",
+                                    color: "#ffffff",
+                                    position: "top"
+                                }
+                            },
+                            data: yData
+                        }
+                    ]
+                };
+                self.myChart.setOption(option);
+                // setTimeout(() => {
+                //     myChart.resize();
+                // }, 2000);
+                // 屏幕响应并对页面进行改变
+                window.onresize = () => {
+                    self.myChart.resize();
+                };
+            }
+        }
+    });
+</script>

@@ -1,0 +1,120 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/card-title.css}" />
+
+<div id="app">
+    <el-row class="verhicle-center">
+        <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5">
+            <img class="head-logo" :src="countData.image.name" />
+        </el-col>
+        <el-col :xs="11" :sm="11" :md="11" :lg="11" :xl="11">
+            <p class="head-title">{{countData.title.name}}</p>
+            <span class="head-evaluate">{{countData.quality.name}}{{countData.quality.value}}</span>
+            <span class="head-evaluate head-margin">{{countData.server.name}}{{countData.server.value}}</span>
+            <span class="head-evaluate head-margin">{{countData.efficiency.name}}{{countData.efficiency.value}}</span>
+        </el-col>
+        <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8">
+            <div class="head-time">{{countData.time.value}}</div>
+        </el-col>
+    </el-row>
+    <el-row class="verhicle-center" type="flex" justify="space-around">
+        <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5">
+            <div class="content-center">
+                <div class="content-num">{{countData.waitOfInspection.value}}</div>
+                <span class="content-title">{{countData.waitOfInspection.name}}</span>
+            </div>
+        </el-col>
+        <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5">
+            <div class="content-center">
+                <div class="content-num">{{countData.inspecting.value}}</div>
+                <span class="content-title">{{countData.inspecting.name}}</span>
+            </div>
+        </el-col>
+        <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5">
+            <div class="content-center">
+                <div class="content-num">{{countData.reported.value}}</div>
+                <span class="content-title">{{countData.reported.name}}</span>
+            </div>
+        </el-col>
+        <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5">
+            <div class="content-center">
+                <div class="content-num">{{countData.exception.value}}</div>
+                <span class="content-title">{{countData.exception.name}}</span>
+            </div>
+        </el-col>
+        <el-col :xs="4" :sm="4" :md="4" :lg="4" :xl="4">
+            <div class="content-center">
+                <div class="content-num">{{countData.waitOfEvaluated.value}}</div>
+                <span class="content-title">{{countData.waitOfEvaluated.name}}</span>
+            </div>
+        </el-col>
+    </el-row>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+
+
+<script>
+    var urlValue = getRequestParam(document.URL);
+    if (urlValue.type == undefined) {
+        urlValue.type = "";
+    }
+    const app = new Vue({
+        el: "#app",
+        data: {
+            // aa: {
+            //     name: "麦趣尔LIMS实验室信息管理系统",
+            //     scoreArr: [
+            //         {
+            //             name: "质量",
+            //             value: 4.9
+            //         }, {
+            //             name: "服务",
+            //             value: 4.8
+            //         }, {
+            //             name: "效率",
+            //             value: 4.8
+            //         },
+            //     ],
+            //     data: [
+            //         {
+            //             name: "待检测项目",
+            //             value: 1962
+            //         }, {
+            //             name: "在检测项目",
+            //             value: 62
+            //         }, {
+            //             name: "已发布报告",
+            //             value: 226
+            //         }, {
+            //             name: "异常检测项目",
+            //             value: 4
+            //         }, {
+            //             name: "待评价",
+            //             value: 214
+            //         },
+            //     ],
+            //     time: "2020121209 11：32 星期六"
+            // }
+            countData: []
+        },
+        // 实例被挂载后调用
+        created: function () {
+        },
+        mounted: function () {
+            this.getData();
+        },
+        // 在 `methods` 对象中定义方法
+        methods: {
+            getData() {
+                var this_ = this;
+                parent.Gikam.post(parent.IFM_CONTEXT + '/first/busicommon/cardTitle/queries/' + urlValue.type).done(function (data) {
+                    this_.countData = data;
+                });
+            },
+        }
+    });
+</script>

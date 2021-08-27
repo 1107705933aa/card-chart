@@ -1,0 +1,185 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+
+<!-- 分段柱形图 -->
+<div id="app" class="baifenbai">
+  <div class="head-time" v-if="showDate">
+    <div class="block" size="mini">
+      <el-date-picker v-model="timeData" type="daterange" range-separator="至" start-placeholder="开始日期"
+        end-placeholder="结束日期" @blur="changeData">
+      </el-date-picker>
+    </div>
+  </div>
+  <el-row :class="showDate?'chart-content':'chart-content2'">
+    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="baifenbai">
+      <div id="report" class="baifenbai"></div>
+    </el-col>
+  </el-row>
+</div>
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  var styleValue = urlValue.style;
+  var mtlType = urlValue.mtlType;
+  if (mtlType == undefined || mtlType == null || mtlType == '') {
+    mtlType = 'panel'
+  }
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+
+  const app = new Vue({
+    el: "#app",
+    data: {
+      chart: null,
+      reportData: [],
+      timeData: [],
+      maxExpected: undefined,
+      showDate: false,
+    },
+    created: function () {
+      if (urlValue.date != null && urlValue.date != undefined && urlValue.date != "") {
+        this.showDate = urlValue.date;
+      }
+      this.defaultDate();
+      this.getData();
+    },
+    methods: {
+      //设置默认日期
+      defaultDate() {
+        //获取新的时间
+        let date = new Date();
+        //获取当前时间的年份转为字符串
+        let year = date.getFullYear().toString();
+        //获取月份，由于月份从0开始，此处要加1，判断是否小于10，如果是在字符串前面拼接'0'
+        let month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1).toString() : (date.getMonth() + 1).toString();
+        //获取天，判断是否小于10，如果是在字符串前面拼接'0'
+        let da = new Date(year, month, 0).getDate();
+        //字符串拼接，开始时间，结束时间
+        let end = year + '-' + month + '-' + da;
+        let beg = year + '-' + month + '-01';
+        this.timeData = [new Date(beg), new Date(end)]; //将值设置给插件绑定的数据
+      },
+      changeData() {
+        if (this.chart){
+          this.chart.destroy();
+        }
+        this.getData();
+      },
+      getData() {
+        var this_ = this;
+        var formData = new FormData();
+        if (this_.timeData[0]) {
+          formData.append("beginDate", this_.timeData[0]);
+        }
+        if (this_.timeData[1]) {
+          formData.append("endDate", this_.timeData[1]);
+        }
+        axios.post(parent.IFM_CONTEXT + '/first/busicommon/' + mtlType + '/reportdata/queries/' + urlValue.type, formData).then((res) => {
+          var vueData = [];
+          var data = res.data;
+          if (data.length == 0) return;
+          //取每一月相加最大值作为x轴坐标
+          var monthArr = [];
+          data.map(function (item) {
+            if (monthArr.indexOf(item.month) == -1) {
+              monthArr.push(item.month);
+            }
+          });
+          let arr = []
+          for (var i = 0; i < monthArr.length; i++) {
+            var temp = 0;
+            data.map(function (item) {
+              if (item.month == monthArr[i]) {
+                if (item.value != null && item.value != '' && item.value != undefined) {
+                  temp = temp + item.value;
+                }
+              }
+            });
+            arr.push(temp);
+          }
+          arr.sort(function (a, b) {
+            return a - b;
+          });
+          this_.maxExpected = arr[arr.length - 1];
+
+          for (var i = 0; i < data.length; i++) {
+            var tem = {};
+            tem.time = data[i].month;
+            tem.type = data[i].type;
+            tem.value = data[i].value;
+            tem.expected = this_.maxExpected;
+            vueData.push(tem);
+          }
+          this_.reportData = vueData;
+        }).then(function () {
+          this_.$nextTick(() => {
+            if (this_.maxExpected != undefined) {
+              this_.getReport();
+            }
+          });
+        });
+      },
+      getReport() {
+        var _this = this
+        _this.chart = new G2.Chart({
+          container: "report",
+          autoFit: true,
+        });
+        _this.chart.data(this.reportData);
+        _this.chart.axis("time", {
+          tickLine: null,
+        });
+
+        _this.chart.axis('value', false);
+
+        _this.chart.scale({
+          value: {
+            min: 0,
+            max: _this.maxExpected,
+            sync: "value",
+          },
+          // position: "bottom",
+        });
+        _this.chart.legend({
+          position: "top",
+        });
+
+        _this.chart.tooltip({
+          shared: true,
+          showMarkers: false,
+        });
+        _this.chart.interaction("active-region");
+
+        if (styleValue == "landscape") {
+          _this.chart.coordinate().transpose();
+        }
+
+        _this.chart
+          .interval()
+          .position("time*expected")
+          .color("#F1F1F1")
+          .shape("border-radius")
+          .tooltip("")
+          .style({
+            opacity: 0.6,
+          });
+
+        _this.chart
+          .interval()
+          .adjust("stack")
+          .position("time*value")
+          .color("type", ["#76EAB9", "#52CEFB", "#8D8BFF", "#F6A042", "#1B27E7", "#B95D71", "#E7C91B", "#A1BEE5", "#6A7584"]);
+
+        _this.chart.render();
+      },
+    }
+  });
+</script>

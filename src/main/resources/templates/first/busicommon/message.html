@@ -1,0 +1,81 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/message.css}" />
+
+<div id="app">
+  <!-- 通知公告 -->
+  <el-row class="notice-content" v-show="noticeData.length != 0">
+    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="roll-content">
+      <el-row style="margin-top: 8px" v-for="(item, index) in noticeData" :key="index" :gutter="20">
+        <el-col :xs="18" :sm="18" :md="18" :lg="18" :xl="18">
+          <span class="notice-title2">【{{ item.modularName }}】</span>
+          <span class="notice-publisher">{{ item.publisher }}</span>
+          <div class="notice-info" :title="item.content">{{ item.contentName }}</div>
+        </el-col>
+        <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
+          <div class="notice-time">{{ item.currentDate }}</div>
+          <el-button @click="handleUpdate(item.id)" style="padding: 5px 10px;margin-top: 5px;" type="info" size="mini"
+            round>设置已读</el-button>
+        </el-col>
+      </el-row>
+    </el-col>
+  </el-row>
+  <div class="notice-none" v-show="noticeData.length == 0">
+    <img th:src="@{/static/first/busicommon/img/none.png}" alt="" />
+    <span>暂无公告</span>
+  </div>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  var mtlType = getRequestParam(document.URL);
+
+  const app = new Vue({
+    el: "#app",
+    data: {
+      // 通知公告
+      noticeData: [],
+    },
+    // 实例被挂载后调用
+    created: function () {
+      this.getData();
+    },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      handleUpdate(id) {
+        var this_ = this;
+        parent.Gikam.post(parent.IFM_CONTEXT + '/first/busicommon/msgFinished/' + id).done(function (data) {
+          this_.getData();
+        });    
+      },
+      getData() {
+        var this_ = this;
+        parent.Gikam.post(parent.IFM_CONTEXT + '/first/busicommon/messages/'+ urlValue.type).done(function (data) {
+          var vueData = [];
+          if (data.length == 0) return;
+          for (var i = 0; i < data.length; i++) {
+            var tem = {};
+            tem.id = data[i].id;
+            tem.modularName = data[i].modularName;
+            tem.publisher = data[i].publisher;
+            tem.contentName = data[i].contentName;
+            tem.currentDate = data[i].currentDate;
+            vueData.push(tem);
+          }
+          this_.noticeData = vueData;
+        });
+      },
+    }
+  });
+
+</script>

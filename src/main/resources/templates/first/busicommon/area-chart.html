@@ -1,0 +1,229 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/area-chart.css}" />
+
+<div id="app">
+    <div class="head-time">
+        <div class="block" size="mini">
+            <el-date-picker v-model="timeData" type="daterange" range-separator="至" start-placeholder="开始日期"
+                end-placeholder="结束日期" @blur="changeData">
+            </el-date-picker>
+        </div>
+    </div>
+    <div class="content-area" id="areacontainer"></div>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+
+<script>
+    var urlValue = getRequestParam(document.URL);
+    if (urlValue.type == undefined) {
+        urlValue.type = "";
+    }
+    const app = new Vue({
+        el: "#app",
+        data: {
+            chart: null,
+            timeData: [],
+            isRender: true,
+            areaData: [
+                // { time: '11/15', value: 18 },
+                // { time: '11/16', value: 100 },
+                // { time: '11/17', value: 75 },
+                // { time: '11/18', value: 60 },
+                // { time: '11/19', value: 50 },
+                // { time: '11/20', value: 26 },
+                // { time: '11/21', value: 45 },
+                // { time: '11/22', value: 65 },
+                // { time: '11/23', value: 60 },
+                // { time: '11/24', value: 70 },
+                // { time: '11/25', value: 100 },
+                // { time: '11/26', value: 90 },
+                // { time: '11/27', value: 75 },
+                // { time: '11/28', value: 60 },
+                // { time: '11/29', value: 70 },
+            ]
+        },
+        // 实例被挂载后调用
+        created: function () { this.defaultDate(); },
+        mounted: function () { this.getData(); },
+        // 在 `methods` 对象中定义方法
+        methods: {
+            //设置默认日期
+            defaultDate() {
+                //获取新的时间(2019.4.12）
+                let date = new Date()
+                //获取当前时间的年份转为字符串
+                let year = date.getFullYear().toString()   //'2019'
+                //获取月份，由于月份从0开始，此处要加1，判断是否小于10，如果是在字符串前面拼接'0'
+                let month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1).toString() : (date.getMonth() + 1).toString()  //'04'
+                //获取天，判断是否小于10，如果是在字符串前面拼接'0'
+                let da = date.getDate() < 10 ? '0' + date.getDate().toString() : date.getDate().toString()  //'12'
+                //字符串拼接，开始时间，结束时间
+                let end = year + '-' + month + '-' + da  //当天'2019-04-12'
+                let beg = year + '-' + month + '-01'    //当月第一天'2019-04-01'
+                this.timeData = [new Date(beg), new Date(end)] //将值设置给插件绑定的数据
+            },
+            changeData() {
+                this.getData();
+            },
+            getData() {
+                var _this = this;
+                var formData = new FormData();
+                formData.append("beginDate", _this.timeData[0]);
+                formData.append("endDate", _this.timeData[1]);
+                axios.post(parent.IFM_CONTEXT + "/first/busicommon/areaChart/queries/" + urlValue.type, formData).then((res) => {
+                    _this.areaData = res.data.map(item => {
+                        return {
+                            time: item.key,
+                            value: item.value
+                        }
+                    })
+
+                    if (_this.isRender == true) {
+                        _this.drawChart();
+                        _this.isRender = false;
+                    } else if (_this.isRender == false) {
+                        _this.chart.changeData(_this.areaData);
+                    }
+                })
+            },
+            drawChart() {
+                var newAreaData = this.areaData.map(item => {
+                    return item.value;
+                });
+                function sortNumber(a, b) {
+                    return a - b
+                }
+                newAreaData = newAreaData.sort(sortNumber);
+                var maxValue, intervalValue, minValue;
+                maxValue = Number(newAreaData[newAreaData.length - 1]);
+                minValue = Number(newAreaData[0]);
+                intervalValue = Number((maxValue - minValue) / 5);
+                intervalValue = Number(intervalValue.toFixed(2));
+                maxValue = Number(maxValue + intervalValue);
+                minValue = (minValue * 1000 - intervalValue * 1000) / 1000;
+                this.chart = new G2.Chart({
+                    container: 'areacontainer',
+                    autoFit: true,
+                });
+                this.chart.data(this.areaData);
+                this.chart.scale({
+                    value: {
+                        max: maxValue,
+                        min: minValue,
+                        nice: true,
+                    },
+                });
+                this.chart.tooltip({
+                    showCrosshairs: false,
+                    shared: false,
+                });
+
+                this.chart.axis('value', {
+                    label: {
+                        formatter: (val) => {
+                            return val;
+                        },
+                    },
+                });
+
+                this.chart.area().position('time*value').shape('smooth');
+                this.chart.line().position('time*value').shape('smooth');
+
+                this.chart.render();
+            }
+
+        }
+    });
+</script>
+<style>
+    .head-time {
+        height: 40px;
+        margin-right: 10px;
+    }
+
+    .block {
+        float: right;
+    }
+
+    .content-area {
+        width: 100%;
+        height: calc(100% - 40px) !important;
+    }
+
+    .el-input__inner {
+        width: 127px !important;
+    }
+
+    .el-range-separator {
+        font-size: 12px !important;
+    }
+
+    .el-input__inner {
+        height: 30px !important;
+        line-height: 30px !important;
+    }
+
+    .el-range__icon,
+    .el-range-separator {
+        line-height: 23px !important;
+    }
+
+    .el-date-editor .el-range-input,
+    .el-date-editor .el-range-separator {
+        font-size: 12px !important;
+    }
+
+    .el-date-editor .el-range-input {
+        width: 54% !important;
+    }
+
+    .el-date-editor .el-range__close-icon {
+        width: 0px !important;
+    }
+
+    /* 改日期大小 */
+    .el-picker-panel {
+        z-index: 2007;
+        top: 10px !important;
+        left: 0 !important;
+    }
+
+    .el-date-range-picker {
+        width: 420px !important;
+    }
+
+    .el-date-table {
+        font-size: 12px;
+    }
+
+    .el-date-table td {
+        padding: 0 !important;
+    }
+
+    .el-date-range-picker__header div {
+        font-size: 13px !important;
+    }
+
+    .el-date-range-picker .el-picker-panel__body {
+        min-width: 113px !important;
+    }
+
+    .el-date-table td,
+    .el-date-table td div {
+        height: 20px !important;
+    }
+
+    .el-popper[x-placement^=bottom] {
+        margin-top: -10px !important;
+    }
+
+    .el-date-range-picker__content {
+        padding: 7px 16px 16px !important;
+    }
+</style>

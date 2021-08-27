@@ -1,0 +1,51 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/my-todo.css}" />
+<!-- 我的待办 -->
+<div id="app" class="baifenbai">
+  <el-row class="baifenbai">
+    <el-col class="content baifenbai" :xs="24" :sm="24" :md="24" :lg="24" :xl="24" style="padding:0 5px;">
+      <div @click="openMenu">
+        <div class="div-flex" :xs="19" :sm="19" :md="19" :lg="19" :xl="19">
+          <img style="height: 82%;" th:src="@{/static/first/busicommon/img/myban.svg}" alt="">
+          <div class="words">{{count}}</div>
+        </div>
+      </div>
+    </el-col>
+  </el-row>
+</div>
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      count: undefined,
+    },
+    created: function () {
+      this.getData();
+    },
+    methods: {
+      getData() {
+        var this_ = this;
+        axios.post(parent.IFM_CONTEXT + '/first/busicommon/todocount/queries').then(function (data) {
+          this_.count = data.data.value;
+        })
+      },
+      openMenu() {
+        parent.workspace.activeNodeById(2021061801);
+      }
+    }
+  });
+  window.refresh = function () {
+    app.getData();
+  }
+</script>

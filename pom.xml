@@ -1,0 +1,97 @@
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.sunwayworld.cloud</groupId>
+        <artifactId>gikam-core-parent</artifactId>
+        <version>0.8.0</version>
+    </parent>
+    
+    <groupId>com.sunwayworld.first</groupId>
+    <artifactId>busi-common</artifactId>
+    <version>0.1.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>Gikam Busi Common</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.sunwayworld.cloud</groupId>
+            <artifactId>gikam-core-common</artifactId>
+            <version>0.8.0</version>
+        </dependency>
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>first</id>
+            <name>remote private nexus</name>
+            <url>http://103.43.184.243:5158/nexus/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>nexus</id>
+            <name>remote private nexus</name>
+            <url>https://nexus.gikam.net/repository/maven-public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>nexus</id>
+            <name>remote private nexus</name>
+            <url>https://nexus.gikam.net/repository/maven-public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+    <!-- 配置上私服地址, 前面带上用户名密码, 目的是可以通过 mvn deploy 命令直接发布上传 -->
+    <distributionManagement>
+        <repository>
+            <id>first</id>
+            <url>http://172.16.4.201:7002/nexus/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>first</id>
+            <url>http://172.16.4.201:7002/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/package.xml</descriptor>
+                    </descriptors>
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

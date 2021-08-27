@@ -1,0 +1,38 @@
+.baifenbai {
+  width: 100%;
+  height: 100%;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+}
+
+.el-table thead {
+  color: #444e63;
+}
+
+.el-table th {
+  background-color: #eee;
+}
+
+.el-table th,
+.el-table tr {
+  font-size: 12px;
+}
+
+.el-table__body-wrapper {
+  overflow: auto;
+  position: relative;
+}
+
+.el-table__body-wrapper::-webkit-scrollbar {
+  /* 宽度为0隐藏 */
+  width: 0;
+}
+
+.el-table__body {
+  /* width: 100% !important; */
+}
+
+

@@ -1,0 +1,40 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/qms/css/header.css}" />
+
+<div id="app">
+  <div class="header">
+    <p class="header-title">{{countData.title}}</p>
+  </div>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  var title = parent.Gikam.propI18N('T_CORE_PANELHEAD.TITLE');
+  const app = new Vue({
+    el: "#app",
+    data: {
+      countData: {
+        title: undefined
+      }
+    },
+    created: function () { },
+    mounted: function () {
+      this.getData();
+    },
+    methods: {
+      getData() {
+        var this_ = this;
+        parent.Gikam.post(parent.IFM_CONTEXT + '/first/busicommon/headcount/queries/' + urlValue.type).done(function (data) {
+          this_.countData = data;
+          this_.countData.title = title;
+        });
+      },
+    }
+  });
+</script>

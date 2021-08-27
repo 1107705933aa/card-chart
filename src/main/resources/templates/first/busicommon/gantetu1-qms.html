@@ -1,0 +1,424 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/qms/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/qms/css/gantetu.css}" />
+
+<div id="app">
+    <div id="chartmain"></div>
+    <div class="borderd"></div>
+    <div id="chartmain2"></div>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+
+<script>
+    var urlValue = getRequestParam(document.URL);
+    if (urlValue.type == undefined) {
+        urlValue.type = "";
+    }
+    const app = new Vue({
+        el: "#app",
+        data: {
+            myChart: null,
+            myChart2: null,
+            // 甘特图
+            ganteData: null,
+            ganteData2: [],
+            onecount: undefined,
+            onedijici: 1,
+            twodijici: 1,
+            shebeiArr: [],
+            equiptCode: '-1',
+            fresh: false
+        },
+        created: function () {
+            var _this = this;
+            // 第一张图初始请求
+            this.getData1();
+            if (this.ganteData != null) {
+                this.equiptCode = this.ganteData.contentData[0].equiptCode;
+                this.getData2(this.equiptCode);
+            };
+            this.$nextTick(() => {
+                this.drawGatt();
+                this.drawGatt2();
+            });
+
+            // 第一张图循环请求
+            setInterval(function () {
+                if (_this.onedijici == _this.onecount) {
+                    _this.onedijici = 0;
+                }
+                _this.onedijici += 1;
+                // 发送的字段  this.onedijici
+                _this.getData1();
+                _this.drawGatt();
+            }, 61000)
+
+            // 第二张图循环请求
+            setInterval(function () {
+                if (_this.twodijici == 6) {
+                    _this.twodijici = 0;
+                }
+                _this.twodijici += 1;
+                if (_this.fresh) {
+                    _this.twodijici = 0;
+                    _this.fresh = false;
+                }
+                _this.equiptCode = _this.shebeiArr[_this.twodijici];
+                _this.getData2(_this.equiptCode);
+                _this.drawGatt2();
+            }, 10000)
+        },
+
+        methods: {
+            getData1() {
+                var _this = this;
+                parent.Gikam.postSync(parent.IFM_CONTEXT + '/first/busicommon/gantetudevice/queries/' + urlValue.type, parent.Gikam.getJsonWrapper({
+                    'n': _this.onedijici,
+                    's': 6
+                })).done(function (res) {
+                    var total = res.total;
+                    if (total == 0) return;
+                    var data = res.rows;
+                    var tempArr = [];
+                    _this.shebeiArr.length = 0;
+                    _this.twodijici = 0;
+                    _this.fresh = true;
+                    _this.onecount = Math.ceil(total / 6);
+                    data.map(function (item) {
+                        var temp = {};
+                        temp.name = item.equipname;
+                        temp.equiptCode = item.equiptCode;
+                        temp.start = new Date(item.startDate);
+                        temp.end = new Date(item.endDate);
+                        tempArr.push(temp);
+                        _this.shebeiArr.push(item.equiptCode);
+                    });
+                    _this.ganteData = {
+                        total: total,
+                        menu: ["进程"],
+                        contentData: tempArr
+                    };
+                });
+            },
+            getData2(equiptCode) {
+                if (equiptCode == null || equiptCode == undefined || equiptCode == -1) return;
+                var _this = this;
+                parent.Gikam.postSync(parent.IFM_CONTEXT + '/first/busicommon/gantetuschedule/queries/' + urlValue.type, parent.Gikam.getJsonWrapper({
+                    equiptCode: equiptCode
+                })).done(function (data) {
+                    var tempArr = [];
+                    data.map(function (item) {
+                        var temp = {};
+                        temp.equipname = item.equipname;
+                        temp.equiptCode = item.equiptCode;
+                        temp.startDate = new Date(item.startDate);
+                        temp.endDate = new Date(item.endDate);
+                        temp.step = item.step;
+                        tempArr.push(temp);
+                    });
+                    _this.ganteData2 = tempArr;
+                });
+            },
+
+            // 甘特图
+            drawGatt() {
+                var _this = this
+                var arrData = [];
+                var corlorArrr = ["skyblue", "#3388FF", "#66CAFB", "#B5E3FC", "#FFD67E", "#FFEABF", "#FFE3DB", "Aquamarine", "Blue", "Coral", "DeepPink", "OrangeRed"];
+                if (_this.ganteData == null) return;
+                for (var i = 0; i < _this.ganteData.contentData.length; i++) {
+                    arrData.push(
+                        {
+                            name: _this.ganteData.contentData[i].name,
+                            type: "bar",
+                            stack: `总量${i}`,
+                            label: {
+                                normal: {
+                                    show: true,
+                                    color: "#CAD2DB",
+                                    position: "right",
+                                    formatter: function (params) {
+                                        return params.seriesName
+                                    }
+                                }
+                            },
+                            itemStyle: {
+                                normal: {
+                                    color: corlorArrr[i],
+                                    borderColor: "#111449",
+                                    borderWidth: 0
+                                }
+                            },
+                            zlevel: -1,
+                            data: [
+                                _this.ganteData.contentData[i].end
+                            ]
+                        },
+                        {
+                            name: _this.ganteData.contentData[i].name,
+                            type: "bar",
+                            stack: `总量${i}`,
+                            itemStyle: {
+                                normal: {
+                                    color: "#111449",
+                                    borderColor: "#111449",
+                                }
+                            },
+                            zlevel: -1,
+                            z: 3,
+                            data: [
+                                _this.ganteData.contentData[i].start
+                            ]
+                        },
+                    )
+                }
+                //指定图表的配置项和数据
+                var option = {
+                    backgroundColor: "",
+                    grid: {
+                        containLabel: true,
+                        show: false,
+                        right: 60,
+                        left: 30,
+                        bottom: 40,
+                        top: 40
+                    },
+                    xAxis: {
+                        type: "time",
+                        axisLabel: {
+                            "show": true,
+                            "interval": 0,
+                            "color": "#CAD2DB"
+                        },
+                        splitLine: {
+                            show: false
+                        }
+                    },
+                    yAxis: {
+                        axisLabel: {
+                            show: true,
+                            color: "#CAD2DB",
+                            interval: 0,
+                            formatter: function (value, index) {
+                                var last = ""
+                                var max = 5;
+                                var len = value.length;
+                                var hang = Math.ceil(len / max);
+                                if (hang > 1) {
+                                    for (var i = 0; i < hang; i++) {
+                                        var start = i * max;
+                                        var end = start + max;
+                                        var temp = value.substring(start, end) + "\n";
+                                        last += temp; //凭借最终的字符串
+                                    }
+                                    return last;
+                                } else {
+                                    return value;
+                                }
+                            }
+                        },
+                        data: ["进程"]
+                    },
+                    tooltip: {
+                        trigger: "axis",
+                        formatter: function (params) {
+                            var res = "";
+                            var name = "";
+                            var start0 = "";
+                            var start = "";
+                            var end0 = "";
+                            var end = "";
+                            for (var i in params) {
+                                var k = i % 2;
+                                if (!k) { //偶数
+                                    start0 = params[i].data;
+                                    start = start0.getFullYear() + "-" + (start0.getMonth() + 1) + "-" + start0.getDate();
+                                }
+                                if (k) { //奇数
+                                    name = params[i].seriesName;
+                                    end0 = params[i].data;
+                                    end = end0.getFullYear() + "-" + (end0.getMonth() + 1) + "-" + end0.getDate();
+                                    res += name + " : " + end + "~" + start + "</br>";
+
+                                }
+                            }
+                            return res;
+                        }
+                    },
+                    series: arrData
+                }//获取dom容器
+                _this.myChart = echarts.init(document.getElementById('chartmain'));
+                // 使用刚指定的配置项和数据显示图表。
+                _this.myChart.setOption(option);
+            },
+            drawGatt2() {
+                var data = this.ganteData2;
+                var corlorArr = ["skyblue", "#3388FF", "#66CAFB", "#B5E3FC", "#FFD67E", "#FFEABF", "#FFE3DB", "Aquamarine", "Blue", "Coral", "DeepPink", "OrangeRed"];
+                var this_ = this;
+                var equipnameArr = [];
+                var stepArr = [];
+                var seriesArr = [];
+                var axis;
+                data.map(function (item) {
+                    if (equipnameArr.indexOf(item.equipname) == -1) {
+                        equipnameArr.push(item.equipname);
+                    }
+                    if (stepArr.indexOf(item.step) == -1) {
+                        stepArr.push(item.step);
+                    }
+                });
+                for (var i = 0; i < stepArr.length; i++) {
+                    var startDateArr = [];
+                    var endDateArr = [];
+                    data.map(function (item) {
+                        if (item.step == stepArr[i]) {
+                            axis = item.startDate;
+                            startDateArr.push(new Date(item.startDate));
+                            endDateArr.push(new Date(item.endDate));
+                        }
+                    });
+                    var time = {
+                        start: startDateArr,
+                        end: endDateArr
+                    }
+                    var stepname = 'step' + i;
+                    this_.ganteData2[stepname] = time;
+                    var sArr = [
+                        {
+                            name: stepArr[i],
+                            type: "bar",
+                            stack: "总量" + i,
+                            label: {
+                                normal: {
+                                    show: true,
+                                    color: "#CAD2DB",
+                                    position: "right",
+                                    formatter: function (params) {
+                                        return params.seriesName
+                                    }
+                                }
+                            },
+                            itemStyle: {
+                                normal: {
+                                    color: corlorArr[i],
+                                    borderColor: "#111449",
+                                    borderWidth: 0
+                                }
+                            },
+                            zlevel: -1,
+                            data: endDateArr
+                        },
+                        {
+                            name: stepArr[i],
+                            type: "bar",
+                            stack: "总量" + i,
+                            itemStyle: {
+                                normal: {
+                                    color: "#111449",
+                                    borderColor: "#111449",
+                                }
+                            },
+                            zlevel: -1,
+                            z: 3,
+                            data: startDateArr
+                        }
+                    ];
+                    Array.prototype.push.apply(seriesArr, sArr);
+                }
+
+                var _this = this
+                //指定图表的配置项和数据
+                var option = {
+                    backgroundColor: "",
+                    grid: {
+                        containLabel: true,
+                        show: false,
+                        right: 90,
+                        left: 30,
+                        bottom: 40,
+                        top: 40
+                    },
+                    xAxis: {
+                        type: "time",
+                        axisLabel: {
+                            "show": true,
+                            "interval": 0,
+                            "color": "#CAD2DB"
+                        },
+                        splitLine: {
+                            show: false
+                        }
+                    },
+                    yAxis: {
+                        axisLabel: {
+                            show: true,
+                            color: "#CAD2DB",
+                            interval: 0,
+                            formatter: function (value, index) {
+                                var last = ""
+                                var max = 5;
+                                var len = value.length;
+                                var hang = Math.ceil(len / max);
+                                if (hang > 1) {
+                                    for (var i = 0; i < hang; i++) {
+                                        var start = i * max;
+                                        var end = start + max;
+                                        var temp = value.substring(start, end) + "\n";
+                                        last += temp; //凭借最终的字符串
+                                    }
+                                    return last;
+                                } else {
+                                    return value;
+                                }
+                            }
+                        },
+                        data: equipnameArr
+                    },
+                    tooltip: {
+                        trigger: "axis",
+                        formatter: function (params) {
+                            var res = "";
+                            var name = "";
+                            var start0 = "";
+                            var start = "";
+                            var end0 = "";
+                            var end = "";
+                            for (var i in params) {
+                                var k = i % 2;
+                                if (!k) { //偶数
+                                    start0 = params[i].data;
+                                    start = start0.getFullYear() + "-" + (start0.getMonth() + 1) + "-" + start0.getDate();
+                                }
+                                if (k) { //奇数
+                                    name = params[i].seriesName;
+                                    end0 = params[i].data;
+                                    end = end0.getFullYear() + "-" + (end0.getMonth() + 1) + "-" + end0.getDate();
+                                    res += name + " : " + end + "~" + start + "</br>";
+                                }
+                            }
+                            return res;
+                        }
+                    },
+                    series: seriesArr
+                }
+                //获取dom容器
+                _this.myChart2 = echarts.init(document.getElementById('chartmain2'));
+                // 使用刚指定的配置项和数据显示图表。
+                _this.myChart2.setOption(option);
+
+                window.onresize = () => {
+                    // 基于准备好的dom，初始化echarts实例
+                    _this.myChart.resize();
+                    _this.myChart2.resize();
+                };
+            },
+
+
+        }
+    });
+</script>

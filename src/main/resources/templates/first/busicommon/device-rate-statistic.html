@@ -1,0 +1,165 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<style scoped>
+  .el-select-dropdown {
+    height: 80% !important;
+  }
+</style>
+<div id="app" class="baifenbai">
+  <!-- 多项目柱形图 -->
+  <div class="head-time" v-if="showDate">
+    <div class="block" size="mini">
+      <el-date-picker :picker-options="pickerOptions" v-model="timeValue" type="month" placeholder="选择月"
+        @blur="changeData" size="mini">
+      </el-date-picker>
+    </div>
+  </div>
+  <el-row :class="showDate?'chart-content':'chart-content2'">
+    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="baifenbai">
+      <div id="qualified" class="baifenbai"></div>
+    </el-col>
+  </el-row>
+</div>
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      chart: null,
+      // 装置合格率
+      deviceData: [],
+      timeType: "month",
+      showDate: true,
+      timeValue: new Date(),
+      pickerOptions: {
+        disabledDate(time) {
+          let minYear = new Date().getFullYear() - 2
+          return time > Date.now() || time.getTime() < new Date(JSON.stringify(minYear))
+        }
+      },
+      timeOptions: [],
+    },
+    // 实例被挂载后调用
+    created: function () {
+      // if (urlValue.date != null && urlValue.date != undefined && urlValue.date != "") {
+      //   this.showDate = urlValue.date;
+      // }
+      // 设置时间选择框内容
+      // this.timeFilter(this.timeType);
+      // 获取数据
+      this.getData();
+
+    },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      // 设置时间选择框内容
+      timeFilter(type) {
+        const self = this;
+        const options = [];
+        const newTime = new Date;
+        if (type === "year") {
+          const year = newTime.getFullYear();
+          self.timeValue = year;
+          for (let i = 0; i < 3; i++) {
+            options.push({
+              value: year - i,
+              label: year - i
+            })
+          }
+        }
+        if (type === "month") {
+          const year = newTime.getFullYear();
+          const month = newTime.getMonth() + 1;
+          self.timeValue = `${year}/${month > 9 ? month : "0" + month}`;
+          for (let y = 0; y < 3; y++) {
+            for (let i = 1; i <= 12; i++) {
+              options.push({
+                value: `${year - y}/${i > 9 ? i : "0" + i}`,
+                label: `${year - y}/${i > 9 ? i : "0" + i}`
+              })
+            }
+          }
+          options.reverse();
+        }
+        self.timeOptions = options;
+      },
+      changeData() {
+        if (this.chart){
+          this.chart.destroy();
+        }
+        this.getData();
+      },
+      getData() {
+        var this_ = this;
+        const formData = new FormData();
+        if (this_.timeValue != "" && this_.timeValue != null && this_.timeValue != undefined) {
+          let year = this_.timeValue.getFullYear();
+          let month = this_.timeValue.getMonth() + 1;
+          let timeValue = `${year}/${month > 9 ? month : "0" + month}`;
+          if (this_.timeType && this_.timeValue) {
+            formData.append(this_.timeType, timeValue);
+          }
+        }
+        
+        axios.post(parent.IFM_CONTEXT + '/first/busicommon/2020/devicerate/queries/' + urlValue.type, formData).then(function (data) {
+          var vueData = [];
+          data = data.data;
+          if (data.length == 0) return;
+          for (var i = 0; i < data.length; i++) {
+            var tem = {};
+            tem.type = data[i].rateName;
+            tem.dateTime = data[i].rateTime;
+            tem.rate = parseFloat(data[i].rateValue);
+            vueData.push(tem);
+          }
+          this_.deviceData = vueData;
+        }).then(function () {
+          this_.$nextTick(() => {
+            this_.getQualified();
+          });
+        });
+      },
+      // 装置合格率
+      getQualified() {
+        this.chart = new G2.Chart({
+          container: "qualified",
+          autoFit: true,
+        });
+
+        this.chart.data(this.deviceData);
+
+        this.chart.scale("rate", { nice: true });
+
+        this.chart.legend({
+          position: "top",
+        });
+
+        this.chart
+          .interval()
+          .position("dateTime*rate")
+          .color("type")
+          .adjust([
+            {
+              type: "dodge",
+              marginRatio: 0,
+            },
+          ]);
+
+        this.chart.interaction("axis-label-highlight");
+
+        this.chart.render();
+      },
+    }
+  });
+</script>

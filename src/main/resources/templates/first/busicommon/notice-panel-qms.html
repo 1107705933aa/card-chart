@@ -1,0 +1,147 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/qms/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/qms/css/notice.css}" />
+
+<div id="app">
+  <!-- 通知公告 -->
+  <div id="quality">
+    <div id="quality1">
+      <el-row class="notice-content" v-show="noticeData.length != 0">
+        <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+          <el-row style="padding: 10px;" v-for="(item, index) in noticeData" :key="index" :gutter="20">
+            <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5">
+              <div class="notice-title2" v-if="item.title=='消息'" style="background-color: rgb(122, 198, 241);">
+                <span style="color: #fff;">{{ item.title}}</span>
+              </div>
+              <div class="notice-title2" v-else-if="item.title=='公告'" style="background-color: rgb(37, 231, 31);">
+                <span style="color: #fff;">{{ item.title}}</span>
+              </div>
+              <div class="notice-title2" v-else-if="item.title=='系统'" style="background-color: orange;">
+                <span style="color: #fff;">{{ item.title}}</span>
+              </div>
+              <div class="notice-title2" v-else style="background-color: rgba(235, 53, 153, 1);">
+                <span style="color: #fff;">{{ item.title}}</span>
+              </div>
+            </el-col>
+            <el-col :xs="13" :sm="13" :md="13" :lg="13" :xl="13">
+              <div class="notice-info" style="color:#04040a;" :title="item.content">{{ item.content }}</div>
+            </el-col>
+            <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
+              <div class="notice-time" style="color:#28292c;">{{ item.time }}</div>
+            </el-col>
+          </el-row>
+        </el-col>
+      </el-row>
+    </div>
+    <div id="quality2"></div>
+  </div>
+  <div class="notice-none" v-show="noticeData.length == 0">
+    <img th:src="@{/static/first/busicommon/img/none.png}" alt="" />
+    <span>暂无公告</span>
+  </div>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      // 通知公告
+      noticeData: [
+        {
+          title: "消息",
+          content: "layui前端框架后台胸html模板",
+          time: "2020/07/05",
+        },
+        {
+          title: "公告",
+          content: "最新发布B/S管理界面设计",
+          time: "2020/07/05",
+        },
+        {
+          title: "系统",
+          content: "uimaker信息管理系统后台界面",
+          time: "2020/07/05",
+        },
+        {
+          title: "消息",
+          content: "兼容IE8及以上主流浏宽器",
+          time: "2020/07/05",
+        },
+        {
+          title: "消息",
+          content: "layui前端框架后台胸html模板",
+          time: "2020/07/05",
+        },
+        {
+          title: "公告",
+          content: "最新发布B/S管理界面设计",
+          time: "2020/07/05",
+        },
+        {
+          title: "系统",
+          content: "uimaker信息管理系统后台界面",
+          time: "2020/07/05",
+        },
+        {
+          title: "消息",
+          content: "兼容IE8及以上主流浏宽器",
+          time: "2020/07/05",
+        },
+      ],
+    },
+    // 实例被挂载后调用
+    created: function () {
+      this.getData();
+    },
+    // 实例被挂载后调用
+    mounted: function () {
+      var _this = this
+      setTimeout(function () {
+        _this.infiniteScrolling("quality");
+      }, 3000)
+    },
+    destroyed: function () {
+      clearInterval(this.qualityInt);
+    },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      getData() {
+        var this_ = this;
+        parent.Gikam.post(parent.IFM_CONTEXT + '/secure/core/module/item/notices/queries/index/').done(function (data) {
+          var vueData = [];
+          if (data.length == 0) return;
+          for (var i = 0; i < data.length; i++) {
+            var tem = {};
+            tem.title = data[i].infoCategory;
+            tem.content = data[i].title;
+            tem.time = data[i].createdTime;
+            vueData.push(tem);
+          }
+          this_.noticeData = vueData;
+        });
+      },
+      infiniteScrolling(name) {
+        const infinite = document.getElementById(name);
+        const infinite1 = document.getElementById(`${name}1`);
+        const infinite2 = document.getElementById(`${name}2`);
+        infinite2.innerHTML = infinite1.innerHTML;
+        this[`${name}Int`] = setInterval(() => {
+          if (infinite2.offsetHeight - infinite.scrollTop <= 0) {
+            // 当滚动至infinite1与infinite2交界时
+            infinite.scrollTop -= infinite1.offsetHeight;
+          } else {
+            infinite.scrollTop += 1;
+          }
+        }, 100);
+      }
+    }
+  });
+</script>

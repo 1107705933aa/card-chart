@@ -1,0 +1,127 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/qms/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/qms/css/biaoage.css}" />
+
+<div id="app">
+  <el-row class="table-head">
+    <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8">序号</el-col>
+    <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8">片盒</el-col>
+    <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8">NG wafer</el-col>
+  </el-row>
+  <div id="quality">
+    <div id="quality1" class="table-scroll">
+      <el-row class="table-content" v-for="(item, index) in handleData" :key="index">
+        <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8" style="
+                color: #0078ff;
+                text-decoration: underline;
+                font-weight: 700;
+              ">{{ item.sort }}</el-col>
+        <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8" style="color:#CAD2DB;">{{
+          item.name
+          }}</el-col>
+        <el-col :xs="8" :sm="8" :md="8" :lg="8" :xl="8" style="color:#CAD2DB;">{{
+          item.wafer
+          }}</el-col>
+      </el-row>
+    </div>
+    <div id="quality2"></div>
+  </div>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      handleData: [
+        // {
+        //   sort: "1",
+        //   name: "片盒1",
+        //   wafer: "WaferlD1",
+        // },
+        // {
+        //   sort: "2",
+        //   name: "片盒2",
+        //   wafer: "WaferlD2",
+        // },
+        // {
+        //   sort: "3",
+        //   name: "片盒3",
+        //   wafer: "WaferlD3",
+        // },
+        // {
+        //   sort: "4",
+        //   name: "片盒4",
+        //   wafer: "WaferlD4",
+        // },
+        // {
+        //   sort: "5",
+        //   name: "片盒5",
+        //   wafer: "WaferlD5",
+        // },
+        // {
+        //   sort: "6",
+        //   name: "片盒3",
+        //   wafer: "WaferlD3",
+        // },
+        // {
+        //   sort: "7",
+        //   name: "片盒4",
+        //   wafer: "WaferlD4",
+        // },
+        // {
+        //   sort: "8",
+        //   name: "片盒5",
+        //   wafer: "WaferlD5",
+        // },
+      ],
+    },
+    created: function () {
+      this.getData();
+    },
+    // 实例被挂载后调用
+    mounted: function () {
+      var _this = this
+      setTimeout(function () {
+        _this.infiniteScrolling("quality");
+      }, 3000)
+    },
+    destroyed: function () {
+      clearInterval(this.qualityInt);
+    },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      getData() {
+        var this_ = this;
+        parent.Gikam.post(parent.IFM_CONTEXT + '/first/busicommon/ngwafer/queries/' + urlValue.type).done(function (data) {
+          var vueData = [];
+          if (data.length == 0) return;
+          this_.handleData = data;
+        });
+      },
+      infiniteScrolling(name) {
+        const infinite = document.getElementById(name);
+        const infinite1 = document.getElementById(`${name}1`);
+        const infinite2 = document.getElementById(`${name}2`);
+        infinite2.innerHTML = infinite1.innerHTML;
+        this[`${name}Int`] = setInterval(() => {
+          if (infinite2.offsetHeight - infinite.scrollTop <= 0) {
+            // 当滚动至infinite1与infinite2交界时
+            infinite.scrollTop -= infinite1.offsetHeight;
+          } else {
+            infinite.scrollTop += 1;
+          }
+        }, 100);
+      }
+    }
+  });
+</script>

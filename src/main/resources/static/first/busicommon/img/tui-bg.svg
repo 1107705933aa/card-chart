@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="92px" height="80px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>退出底块</title>
+    <defs>
+        <path d="M1845.90388,38 L1899.59612,38 C1902.35754,38 1904.59612,40.2385763 1904.59612,43 C1904.59612,43.408809 1904.54598,43.8160751 1904.44683,44.2126781 L1890.94683,98.2126781 C1890.39037,100.438513 1888.39046,102 1886.09612,102 L1832.40388,102 C1829.64246,102 1827.40388,99.7614237 1827.40388,97 C1827.40388,96.591191 1827.45402,96.1839249 1827.55317,95.7873219 L1841.05317,41.7873219 C1841.60963,39.5614869 1843.60954,38 1845.90388,38 Z" id="path-1"></path>
+        <filter x="-15.7%" y="-15.6%" width="131.5%" height="143.8%" filterUnits="objectBoundingBox" id="filter-2">
+            <feOffset dx="0" dy="4" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="4" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.61344417   0 0 0 0 0.68155283   0 0 0 0 0.934527853  0 0 0 0.197934878 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="退出底块" transform="translate(-1820.000000, -34.000000)">
+            <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+            <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-1"></use>
+        </g>
+    </g>
+</svg>

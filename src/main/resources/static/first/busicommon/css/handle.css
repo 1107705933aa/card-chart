@@ -1,0 +1,120 @@
+ul,
+li {
+  list-style: none;
+  text-decoration: none;
+}
+
+.popup-content .find-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 20px 0;
+  color: #373737;
+}
+
+.popup-content /deep/ .el-form-item__label {
+  font-size: 12px;
+  color: #606266;
+}
+
+.popup-content /deep/ .el-date-editor--daterange.el-input,
+.popup-content .el-date-editor--daterange.el-input__inner,
+.popup-content .el-date-editor--timerange.el-input,
+.popup-content .el-date-editor--timerange.el-input__inner {
+  width: 200px;
+}
+
+.popup-content /deep/ .el-checkbox {
+  margin-right: 15px;
+}
+
+.shaixuan {
+  border: 0px;
+  width: 35px;
+  font-size: 12px;
+  padding: 0;
+  color: #a9a9aa;
+  background-color: #eff0f1;
+}
+
+.handle-content {
+  width: 100%;
+  height: 100%;
+  padding: 0 20px 20px;
+}
+
+.handle-content .card-head {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.handle-content .card-head .card-title {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: #2d2d2d;
+}
+
+.handle-content .card-head .card-title img {
+  height: 17px;
+  margin-right: 10px;
+}
+
+.handle-content .card-head .card-more {
+  width: 50px;
+  height: 30px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  border-radius: 8px;
+  color: #a9a9aa;
+  background-color: red;
+  background-color: #eff0f1;
+}
+
+.handle-content .card-head .card-more img {
+  width: 15px;
+  margin-right: 6px;
+}
+
+.handle-content .table-head {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 42px;
+  margin-top: 10px;
+  background-color: #f2f4f8;
+}
+
+.handle-content .table-head .el-col {
+  font-size: 13px;
+  text-align: center;
+}
+
+.handle-content .table-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  /* height: 42px; */
+  padding: 10px;
+  /* margin-top: 5px; */
+  box-shadow: 0 0.5px 0 0 rgba(0, 0, 0, 0.1);
+}
+
+.handle-content .table-content .el-col {
+  font-size: 13px;
+  text-align: center;
+}
+
+.table-scroll {
+  height: 100%;
+  overflow-y: scroll;
+  scrollbar-width: none; /* firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+::-webkit-scrollbar {
+  display: none; /* Chrome Safari */
+}

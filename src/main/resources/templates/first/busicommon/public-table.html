@@ -1,0 +1,80 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/table.css}" />
+
+<div id="app">
+    <div class="head-time">
+        <div class="block" size="mini">
+            <el-date-picker v-model="timeData" type="daterange" range-separator="至" start-placeholder="开始日期"
+                end-placeholder="结束日期" @blur="changeData">
+            </el-date-picker>
+        </div>
+    </div>
+    <el-table height="250" class="chart-content" v-if="tableData.length!=0" :data="tableData" header-align="center">
+        <!-- <el-table-column :width="item.width" v-for="(item, index) in titles" :key="index" :label="item.name" align="center"> -->
+        <el-table-column v-for="(item, index) in titles" :key="index" :label="item.name" align="center">
+            <template slot-scope="scope">
+                <span v-if="index!=hrefColIndex">{{scope.row[item.code]}}</span>
+                <span v-if="index==hrefColIndex" @click="openMenu(scope.row.href)"
+                    style="border-bottom: 2px solid #6565FD; cursor: pointer;">{{scope.row[item.code]}}</span>
+            </template>
+        </el-table-column>
+    </el-table>
+</div>
+
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+
+<script>
+    var urlValue = getRequestParam(document.URL);
+    if (urlValue.type == undefined) {
+        urlValue.type = "";
+    }
+    const app = new Vue({
+        el: "#app",
+        data: {
+            timeData: ['Fri Jan 01 2021 00:00:00 GMT+0800 (中国标准时间)', 'Fri Mar 05 2021 00:00:00 GMT+0800 (中国标准时间)'],
+            titles: [],
+            hrefColIndex: Number,
+            tableData: []
+        },
+        // 实例被挂载后调用
+        created: function () {
+            this.getData();
+        },
+        mounted() {
+            this.getData();
+        },
+        // 在 `methods` 对象中定义方法
+        methods: {
+            changeData() {
+                this.getData();
+            },
+            getData() {
+                var this_ = this;
+                var formData = new FormData();
+                if (Boolean(urlValue.date) == true) {
+                    if (this_.timeData[0]) {
+                        formData.append("beginDate", this_.timeData[0]);
+                    }
+                    if (this_.timeData[1]) {
+                        formData.append("endDate", this_.timeData[1]);
+                    }
+                }
+
+                axios.post(parent.IFM_CONTEXT + '/first/busicommon/dataGridInfo/' + urlValue.type, formData).then(function (data) {
+                    data = data.data;
+                    this_.titles = data.titles;
+                    this_.hrefColIndex = data.hrefColIndex;
+                    this_.tableData = data.data;
+                });
+            },
+
+            openMenu(id) {
+                parent.workspace.activeNodeById(id);
+            }
+        }
+    });
+</script>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="132px" height="104px" viewBox="0 0 132 104" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>图形_待审核文章</title>
+    <defs>
+        <linearGradient x1="0%" y1="85.1734081%" x2="94.5093212%" y2="34.7061718%" id="linearGradient-1">
+            <stop stop-color="#A8ECFF" offset="0%"></stop>
+            <stop stop-color="#5CD0FF" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="生产主面板" transform="translate(-64.000000, -172.000000)">
+            <g id="图形_待审核文章" transform="translate(64.000000, 171.997302)">
+                <path d="M94.0139542,-7.10542736e-15 C117.468536,23.2013294 132,55.4050112 132,91.0026984 C132,95.3912499 131.779144,99.7282179 131.347942,104.003094 L4,104.003094 C1.790861,104.003094 0,102.211837 0,100.002698 L0,4.00269835 C0,1.79355936 1.790861,0.0026983544 4,0.0026983544 L94.0139542,-7.10542736e-15 Z" id="路径" fill="#EEFAFF"></path>
+                <path d="M124,91.0026984 C124,95.3955039 123.763964,99.7331802 123.303883,104.003736 L4,104.003736 C1.790861,104.003736 0,102.211837 0,100.002698 L0,4.00269835 C0,1.79355936 1.790861,0.0026983544 4,0.0026983544 L82.2254992,0.0012053906 C107.803161,22.0080518 124,54.6138879 124,91.0026984 Z" id="路径" fill="url(#linearGradient-1)"></path>
+            </g>
+        </g>
+    </g>
+</svg>

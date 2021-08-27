@@ -1,0 +1,239 @@
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/element.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/common.css}" />
+<link rel="stylesheet" th:href="@{/static/first/busicommon/css/progress.css}" />
+<style scoped>
+  .el-select-dropdown {
+    height: 80% !important;
+  }
+</style>
+
+<div id="app" style="width:100%;height:100%;">
+  <!-- <div v-if="urlValue.more!=undefined" class="title-more" @click="openMenu(urlValue.more)">
+    更多<i class="el-icon-arrow-right"></i>
+  </div> -->
+  <!-- <div class="head-time" v-if="showDate">
+    <div class="block" size="mini">
+      <el-select size="mini" v-model="timeValue" placeholder="请选择">
+        <el-option v-for="item in timeOptions" :key="item.value" :label="item.label" :value="item.value">
+        </el-option>
+      </el-select>
+    </div>
+  </div> -->
+  <div class="head-time" v-if="showDate">
+    <div class="block" size="mini">
+      <el-date-picker :picker-options="pickerOptions" v-model="timeValue" type="month" placeholder="选择月"
+        @blur="changeData" size="mini">
+      </el-date-picker>
+    </div>
+  </div>
+  <!-- 检测进度 -->
+  <el-row :class="showDate?'chart-content':'chart-content2'">
+    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" style="width:100%;height:100%;">
+      <div id="progress"></div>
+    </el-col>
+  </el-row>
+</div>
+<script th:src="@{/static/first/busicommon/js/vue.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/echarts.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/axios.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/element.js}"></script>
+<script th:src="@{/static/first/busicommon/js/g2.min.js}"></script>
+<script th:src="@{/static/first/busicommon/js/choose-type.js}"></script>
+
+
+<script>
+  var urlValue = getRequestParam(document.URL);
+  if (urlValue.type == undefined) {
+    urlValue.type = "";
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      // 检测进度
+      progressData: [],
+      timeType: "month",
+      timeValue: new Date(),
+      pickerOptions: {
+        disabledDate(time) {
+          let minYear = new Date().getFullYear() - 2
+          return time > Date.now() || time.getTime() < new Date(JSON.stringify(minYear))
+        }
+      },
+      showDate: true,
+      // 筛选
+      sizeForm: {
+        date1: "",
+        type: [],
+        type2: [],
+        type3: [],
+      },
+    },
+    created: function () {
+      if (urlValue.date != null && urlValue.date != undefined && urlValue.date != "") {
+        this.showDate = urlValue.date;
+      }
+      // 设置时间选择框内容
+      // this.timeFilter(this.timeType);
+      this.getData();
+    },
+    // 实例被挂载后调用
+    mounted: function () { },
+    // 在 `methods` 对象中定义方法
+    methods: {
+      // 设置时间选择框内容
+      timeFilter(type) {
+        const self = this;
+        const options = [];
+        const newTime = new Date;
+        if (type === "year") {
+          const year = newTime.getFullYear();
+          self.timeValue = year;
+          for (let i = 0; i < 3; i++) {
+            options.push({
+              value: year - i,
+              label: year - i
+            })
+          }
+        }
+        if (type === "month") {
+          const year = newTime.getFullYear();
+          const month = newTime.getMonth() + 1;
+          self.timeValue = `${year}/${month > 9 ? month : "0" + month}`;
+          for (let y = 0; y < 3; y++) {
+            for (let i = 1; i <= 12; i++) {
+              options.push({
+                value: `${year - y}/${i > 9 ? i : "0" + i}`,
+                label: `${year - y}/${i > 9 ? i : "0" + i}`
+              })
+            }
+          }
+          options.reverse();
+        }
+        self.timeOptions = options;
+      },
+      // 改变接口
+      changeData() {
+        if (this.chart) {
+          this.chart.destroy();
+        }
+        this.getData();
+      },
+      getData() {
+        const this_ = this;
+        const formData = new FormData();
+        if (this_.timeValue != "" && this_.timeValue != null && this_.timeValue != undefined) {
+          let year = this_.timeValue.getFullYear();
+          let month = this_.timeValue.getMonth() + 1;
+          let timeValue = `${year}/${month > 9 ? month : "0" + month}`;
+          if (this_.timeType && this_.timeValue) {
+            formData.append(this_.timeType, timeValue);
+          }
+        }
+        // parent.Gikam.post(parent.IFM_CONTEXT + '/first/busicommon/testprogress/queries/' + urlValue.type).done(function (data) {
+        axios.post(parent.IFM_CONTEXT + '/first/busicommon/invoicedeptstatistic/queries', formData).then(function (data) {
+          var vueData = [];
+          data = data.data;
+          if (data.length == 0) return;
+          for (var i = 0; i < data.length; i++) {
+            var tem = {};
+            tem.progress = data[i].progressName;
+            tem.probability = (data[i].currentValue / data[i].totalValue) * 100;
+            tem.expected = 100;
+            vueData.push(tem);
+          }
+          this_.progressData = vueData;
+        }).then(function () {
+          this_.$nextTick(() => {
+            this_.getProgress();
+          });
+        });
+
+      },
+      getProgress() {
+        this.chart = new G2.Chart({
+          container: "progress",
+          autoFit: true,
+        });
+        this.chart.data(this.progressData);
+        this.chart.scale({
+          expected: {
+            min: 0,
+            max: 100,
+            sync: "value",
+          },
+          probability: {
+            sync: "value",
+            formatter(val) {
+              return val + "万元";
+            },
+            alias: "值",
+          },
+        });
+        this.chart.axis("progress", {
+          title: null,
+          tickLine: null,
+          line: null,
+        });
+        this.chart.axis("probability", true);
+        this.chart.interval().position('progress*probability')
+        this.chart.axis("expected", false);
+        this.chart.legend(false);
+        this.chart.tooltip({
+          shared: true,
+          showMarkers: false,
+        });
+
+        // Y轴单位
+        // this.chart.annotation().text({
+        //   position: [2015, 8],
+        //   content: '单位：万元',
+        //   style: {
+        //     fill: '#8c8c8c',
+        //     fontWeight: 300
+        //   },
+        //   offsetY: -30,
+        //   offsetX: -20
+        // });
+
+        this.chart
+          .interval()
+          .position("progress*expected")
+          .color("#F1F1F1")
+          .shape("border-radius")
+          .tooltip("")
+          .style({
+            opacity: 0.6,
+          });
+        this.chart
+          .interval()
+          .position("progress*probability")
+          .color("#76DAB4")
+          .tooltip("")
+          .shape("border-radius")
+          .label("probability", (val) => {
+            return {
+              position: 'left',
+              style: {
+                fill: "#fff",
+              },
+              offset: 30,
+              content: (originData) => {
+                // return originData.probability + "%";
+              },
+            };
+          });
+
+        this.chart.coordinate("rect").transpose();
+
+        this.chart.interaction("active-region");
+        this.chart.render();
+      },
+      // 筛选
+      onSubmit() {
+      },
+      openMenu(id) {
+        parent.workspace.activeNodeById(id);
+      }
+    }
+  });
+</script>
